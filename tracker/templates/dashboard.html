@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Your Performance Calendar</h2>
+
+<div class="heatmap-container mb-5">
+    <div id="month-labels" class="month-labels"></div>
+    <div id="heatmap" class="heatmap-grid"></div>
+</div>
+
+<hr class="my-5">
+
+<h3>Daily Performance Trend</h3>
+<canvas id="lineChart" height="120"></canvas>
+
+<hr class="my-5">
+
+<h3>Monthly Average Scores</h3>
+<canvas id="barChart" height="120"></canvas>
+
+<hr class="my-5">
+
+<h3>Performance Distribution</h3>
+<canvas id="pieChart" height="120"></canvas>
+
+
+<style>
+/* ---------- HEATMAP LAYOUT ---------- */
+.heatmap-container {
+    display: grid;
+    grid-template-rows: auto auto;
+    row-gap: 10px;
+}
+
+.month-labels {
+    display: grid;
+    grid-auto-flow: column;
+    font-size: 12px;
+    color: #555;
+    padding-left: 18px;
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(53, 15px);
+    grid-template-rows: repeat(7, 15px);
+    gap: 2px;
+}
+
+.day-box {
+    width: 15px;
+    height: 15px;
+    border-radius: 2px;
+}
+
+/* Legend (optional) */
+.legend {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+.legend span {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// ===============================
+// READ DJANGO DATA
+// ===============================
+const scoreData = JSON.parse('{{ score_data|safe|escapejs }}');
+const joinDate = "{{ join_date }}";
+const today = "{{ today }}";
+
+
+// ===============================
+// HEATMAP DATE FUNCTIONS
+// ===============================
+function getAllDatesOfYear() {
+    let arr = [];
+    const year = new Date().getFullYear();
+    let d = new Date(year, 0, 1);
+
+    while (d.getFullYear() === year) {
+        arr.push(new Date(d));
+        d.setDate(d.getDate() + 1);
+    }
+    return arr;
+}
+
+function weekNumber(d) {
+    const yearStart = new Date(d.getFullYear(), 0, 1);
+    return Math.floor((d - yearStart) / (7 * 24 * 60 * 60 * 1000));
+}
+
+const days = getAllDatesOfYear();
+
+
+// ===============================
+// MONTH LABEL CALCULATION
+// ===============================
+let monthWeeks = {};
+
+days.forEach(d => {
+    const month = d.toLocaleString("default", { month: "short" });
+    const wk = weekNumber(d);
+
+    if (!monthWeeks[month]) monthWeeks[month] = new Set();
+    monthWeeks[month].add(wk);
+});
+
+let monthHTML = "";
+
+Object.entries(monthWeeks).forEach(([month, weeks]) => {
+    monthHTML += `<div style="grid-column: span ${weeks.size};">${month}</div>`;
+});
+
+document.getElementById("month-labels").innerHTML = monthHTML;
+
+
+// ===============================
+// RENDER HEATMAP
+// ===============================
+let heatHTML = "";
+
+days.forEach(day => {
+    const dateStr = day.toISOString().split("T")[0];
+    const wk = weekNumber(day);
+    const row = day.getDay() + 1; // Sunday = row 1
+
+    let color = "#000"; // before join date
+
+    if (scoreData[dateStr]) {
+        let score = scoreData[dateStr];
+
+        if (score >= 120) color = "#006400";
+        else if (score >= 110) color = "#228B22";
+        else if (score >= 100) color = "#32CD32";
+        else if (score >= 80)  color = "#CCCC00";
+        else if (score >= 50)  color = "#FF8C00";
+        else                  color = "#8B0000";
+
+    } else if (dateStr >= joinDate && dateStr <= today) {
+        color = "#FFFFFF"; // no entry yet
+    }
+
+    heatHTML += `
+        <div class="day-box"
+             title="${dateStr}"
+             style="grid-column:${wk + 1}; grid-row:${row}; background:${color}">
+        </div>
+    `;
+});
+
+document.getElementById("heatmap").innerHTML = heatHTML;
+
+
+// ===============================
+// LINE CHART
+// ===============================
+const lineLabels = JSON.parse('{{ line_labels|safe|escapejs }}');
+const lineValues = JSON.parse('{{ line_values|safe|escapejs }}');
+
+new Chart(document.getElementById("lineChart"), {
+    type: "line",
+    data: {
+        labels: lineLabels,
+        datasets: [{
+            label: "Daily Score",
+            data: lineValues,
+            borderColor: "blue",
+            borderWidth: 2,
+            tension: 0.3
+        }]
+    }
+});
+
+
+// ===============================
+// BAR CHART
+// ===============================
+const barLabels = JSON.parse('{{ month_labels|safe|escapejs }}');
+const barValues = JSON.parse('{{ month_scores|safe|escapejs }}');
+
+new Chart(document.getElementById("barChart"), {
+    type: "bar",
+    data: {
+        labels: barLabels,
+        datasets: [{
+            label: "Monthly Avg Score",
+            data: barValues,
+            backgroundColor: "skyblue",
+        }]
+    }
+});
+
+
+// ===============================
+// PIE CHART
+// ===============================
+const pieData = [
+    Number("{{ excellent }}"),
+    Number("{{ good }}"),
+    Number("{{ average }}"),
+    Number("{{ bad }}")
+];
+
+
+new Chart(document.getElementById("pieChart"), {
+    type: "pie",
+    data: {
+        labels: ["Excellent", "Good", "Average", "Poor"],
+        datasets: [{
+            data: pieData,
+            backgroundColor: ["#006400", "#32CD32", "#CCCC00", "#FF4500"],
+        }]
+    }
+});
+</script>
+
+{% endblock %}

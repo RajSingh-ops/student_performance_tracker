@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Choose Your Criteria{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-3">Choose Your 5 Daily Criteria</h2>
+
+<form method="post" class="card p-4 shadow-sm">
+    {% csrf_token %}
+
+    <label>Criterion 1</label>
+    <input class="form-control mb-2" type="text" name="crit1" required>
+
+    <label>Criterion 2</label>
+    <input class="form-control mb-2" type="text" name="crit2" required>
+
+    <label>Criterion 3</label>
+    <input class="form-control mb-2" type="text" name="crit3" required>
+
+    <label>Criterion 4</label>
+    <input class="form-control mb-2" type="text" name="crit4" required>
+
+    <label>Criterion 5</label>
+    <input class="form-control mb-2" type="text" name="crit5" required>
+
+    <button class="btn btn-primary w-100 mt-3">Save Criteria</button>
+</form>
+
+{% endblock %}

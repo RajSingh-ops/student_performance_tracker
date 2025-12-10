@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Review Panel{% endblock %}
+
+{% block content %}
+<style>
+.star-rating {
+    direction: rtl;
+    unicode-bidi: bidi-override;
+    font-size: 32px;
+    display: inline-flex;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    color: #ccc;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    padding: 2px;
+    border-radius: 6px;
+}
+
+/* Hover effect */
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+    color: gold;
+}
+
+/* Normal checked stars (gold) */
+.star-rating input:checked ~ label {
+    color: gold;
+}
+
+/* Highlight SELECTED star (the one clicked) */
+.star-rating input:checked + label {
+    transform: scale(1.35);
+    box-shadow: 0 0 8px rgba(0, 140, 255, 0.8);
+    border: 2px solid rgba(0, 140, 255, 0.6);
+    border-radius: 6px;
+    background: rgba(0, 140, 255, 0.1);
+}
+</style>
+
+<div class="container mt-4">
+
+    <h2 class="mb-4">Review Panel</h2>
+
+    <!-- Average Rating Section -->
+    <div class="card p-4 shadow-sm mb-4">
+        <h4>Average Rating</h4>
+        <div style="font-size: 22px;">
+
+            {% for _ in "12345" %}
+                {% if forloop.counter <= avg_full %}
+                    ⭐
+                {% else %}
+                    ☆
+                {% endif %}
+            {% endfor %}
+
+        </div>
+        <p class="mt-2 text-muted">Average: {{ avg_rating|floatformat:1 }} stars</p>
+    </div>
+
+
+    <!-- Submit New Review -->
+    <div class="card p-4 shadow-sm mb-5">
+        <h4>Leave a Review</h4>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Star Rating -->
+            <div class="mb-3">
+                <label class="form-label"><strong>Your Rating</strong></label><br>
+
+                <div class="star-rating">
+                    <input type="radio" name="rating" value="5" id="5"><label for="5">⭐</label>
+                    <input type="radio" name="rating" value="4" id="4"><label for="4">⭐</label>
+                    <input type="radio" name="rating" value="3" id="3"><label for="3">⭐</label>
+                    <input type="radio" name="rating" value="2" id="2"><label for="2">⭐</label>
+                    <input type="radio" name="rating" value="1" id="1"><label for="1">⭐</label>
+                </div>
+            </div>
+
+            <textarea name="message" class="form-control mb-3"
+                      placeholder="Write your review here..." required></textarea>
+
+            <button class="btn btn-primary w-100">Submit Review</button>
+        </form>
+
+        <style>
+            .star-rating input { display: none; }
+            .star-rating label {
+                font-size: 30px;
+                cursor: pointer;
+            }
+            /* highlight previously hovered stars */
+            .star-rating label:hover,
+            .star-rating label:hover ~ label {
+                color: gold;
+            }
+            /* highlight checked stars */
+            .star-rating input:checked ~ label {
+                color: gold;
+            }
+        </style>
+    </div>
+
+
+    <!-- All Reviews List -->
+    <div class="card p-4 shadow-sm">
+        <h4>All Reviews</h4>
+
+        {% for r in reviews %}
+            <div class="border-bottom py-3">
+                <strong>{{ r.user.username }}</strong>
+
+                <span style="font-size:18px" class="text-warning">
+                    {% for _ in "12345" %}
+                        {% if forloop.counter <= r.rating %}
+                            ⭐
+                        {% else %}
+                            ☆
+                        {% endif %}
+                    {% endfor %}
+                </span>
+
+                <p class="mt-2">{{ r.message }}</p>
+                <small class="text-muted">{{ r.created_at }}</small>
+            </div>
+        {% empty %}
+            <p class="text-muted">No reviews yet.</p>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

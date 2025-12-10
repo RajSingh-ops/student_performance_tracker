@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+
+        <h3>Edit Profile</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <label>Bio</label>
+            <textarea class="form-control mb-3" name="bio">{{ profile.bio }}</textarea>
+
+            <label>Profile Photo</label>
+            <input type="file" name="profile_image" class="form-control mb-3">
+
+            <label>Header Photo</label>
+            <input type="file" name="header_image" class="form-control mb-3">
+
+            <hr>
+
+            <label>Instagram</label>
+            <input name="instagram" class="form-control mb-2" value="{{ profile.instagram }}">
+
+            <label>Twitter</label>
+            <input name="twitter" class="form-control mb-2" value="{{ profile.twitter }}">
+
+            <label>LinkedIn</label>
+            <input name="linkedin" class="form-control mb-2" value="{{ profile.linkedin }}">
+
+            <label>GitHub</label>
+            <input name="github" class="form-control mb-3" value="{{ profile.github }}">
+
+            <button class="btn btn-success w-100">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
