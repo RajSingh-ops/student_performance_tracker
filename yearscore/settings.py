@@ -157,6 +157,4 @@ LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Media files (served via Cloudinary in production)
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"  # Local fallback for development
+# Media: using Cloudinary storage via DEFAULT_FILE_STORAGE; do not use local MEDIA_ROOT on Render
