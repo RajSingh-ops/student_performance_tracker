@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from tracker.views_auth import register_view, CustomLoginView, logout_view
-from tracker.views import dashboard_view
+from tracker.views import dashboard_view, handler404
 from tracker import views
 
 urlpatterns = [
@@ -33,4 +33,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# 404 handler
+handler404 = handler404
 

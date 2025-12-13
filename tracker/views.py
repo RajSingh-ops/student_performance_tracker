@@ -7,11 +7,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.core.mail import send_mail
+from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 
 from .models import Criterion, DailyEntry, DailyScore, Profile, Review
+
+
+def handler404(request, exception=None):
+    """Redirect 404 errors to dashboard."""
+    return redirect('dashboard')
 
 
 @login_required
