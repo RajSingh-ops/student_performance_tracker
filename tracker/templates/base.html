@@ -46,6 +46,12 @@
 
     <div class="d-flex align-items-center gap-3">
 
+        <!-- Daily Button -->
+        <a href="{% url 'daily' %}" class="btn btn-success btn-sm">Daily</a>
+
+        <!-- Social Button -->
+        <a href="{% url 'social' %}" class="btn btn-info btn-sm">Social</a>
+
         <!-- Profile Icon with Dropdown -->
         <div class="dropdown">
             {% if request.user.profile.profile_image %}

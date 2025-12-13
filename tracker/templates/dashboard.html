@@ -13,17 +13,24 @@
 <hr class="my-5">
 
 <h3>Daily Performance Trend</h3>
-<canvas id="lineChart" height="120"></canvas>
+<canvas id="lineChart" height="90"></canvas>
 
 <hr class="my-5">
 
-<h3>Monthly Average Scores</h3>
-<canvas id="barChart" height="120"></canvas>
-
-<hr class="my-5">
-
-<h3>Performance Distribution</h3>
-<canvas id="pieChart" height="120"></canvas>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card p-3 shadow-sm">
+            <h5 class="mb-3">Monthly Average Scores</h5>
+            <canvas id="barChart" height="110"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3 shadow-sm">
+            <h5 class="mb-3">Performance Distribution</h5>
+            <canvas id="pieChart" height="110"></canvas>
+        </div>
+    </div>
+</div>
 
 
 <style>
@@ -136,15 +143,15 @@ days.forEach(day => {
 
     let color = "#000"; // before join date
 
-    if (scoreData[dateStr]) {
-        let score = scoreData[dateStr];
+    if (typeof scoreData[dateStr] !== 'undefined') {
+        let score = Number(scoreData[dateStr]);
 
-        if (score >= 120) color = "#006400";
-        else if (score >= 110) color = "#228B22";
-        else if (score >= 100) color = "#32CD32";
-        else if (score >= 80)  color = "#CCCC00";
-        else if (score >= 50)  color = "#FF8C00";
-        else                  color = "#8B0000";
+        // score is average per-criterion (1..5)
+        if (score >= 4.5) color = "#006400";       // excellent
+        else if (score >= 3.5) color = "#32CD32";  // very good
+        else if (score >= 2.5) color = "#CCCC00";  // average
+        else if (score >= 1.5) color = "#FF8C00";  // below average
+        else color = "#8B0000";                    // poor
 
     } else if (dateStr >= joinDate && dateStr <= today) {
         color = "#FFFFFF"; // no entry yet
@@ -202,23 +209,23 @@ new Chart(document.getElementById("barChart"), {
 
 
 // ===============================
-// PIE CHART
+// PIE CHART (5 categories)
 // ===============================
 const pieData = [
     Number("{{ excellent }}"),
-    Number("{{ good }}"),
+    Number("{{ very_good }}"),
     Number("{{ average }}"),
-    Number("{{ bad }}")
+    Number("{{ below_avg }}"),
+    Number("{{ poor }}")
 ];
-
 
 new Chart(document.getElementById("pieChart"), {
     type: "pie",
     data: {
-        labels: ["Excellent", "Good", "Average", "Poor"],
+        labels: ["Excellent", "Very Good", "Average", "Below Avg", "Poor"],
         datasets: [{
             data: pieData,
-            backgroundColor: ["#006400", "#32CD32", "#CCCC00", "#FF4500"],
+            backgroundColor: ["#006400", "#32CD32", "#CCCC00", "#FF8C00", "#8B0000"],
         }]
     }
 });

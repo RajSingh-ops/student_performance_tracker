@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Other Users You might find inspiration from</h2>
+
+    {% if users %}
+        <div class="list-group">
+            {% for user in users %}
+                <div class="list-group-item p-0 mb-3 shadow-sm">
+                    <div class="card border-0">
+                        <div class="row g-0 align-items-center">
+                            <div class="col-auto p-3 text-center">
+                                {% if user.profile.profile_image %}
+                                    <img src="{{ user.profile.profile_image.url }}" alt="{{ user.username }}" class="rounded" style="width:140px; height:140px; object-fit:cover;">
+                                {% else %}
+                                    <div class="rounded bg-secondary text-white d-flex align-items-center justify-content-center" style="width:140px; height:140px; font-size:48px;">
+                                        {{ user.username|first|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title mb-1">{{ user.get_full_name|default:user.username }}</h5>
+                                            <p class="text-muted mb-2">@{{ user.username }}</p>
+                                            {% if user.profile.bio %}
+                                                <p class="card-text mb-2">{{ user.profile.bio }}</p>
+                                            {% endif %}
+                                            <div class="mb-2">
+                                                {% if user.profile.instagram %}
+                                                    <a href="{{ user.profile.instagram }}" class="btn btn-sm btn-outline-primary me-1" target="_blank">Instagram</a>
+                                                {% endif %}
+                                                {% if user.profile.twitter %}
+                                                    <a href="{{ user.profile.twitter }}" class="btn btn-sm btn-outline-info me-1" target="_blank">Twitter</a>
+                                                {% endif %}
+                                                {% if user.profile.linkedin %}
+                                                    <a href="{{ user.profile.linkedin }}" class="btn btn-sm btn-outline-secondary me-1" target="_blank">LinkedIn</a>
+                                                {% endif %}
+                                                {% if user.profile.github %}
+                                                    <a href="{{ user.profile.github }}" class="btn btn-sm btn-outline-dark me-1" target="_blank">GitHub</a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <a href="{% url 'profile' %}" class="btn btn-primary">View Profile</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            <p>No users found.</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+{% endblock %}

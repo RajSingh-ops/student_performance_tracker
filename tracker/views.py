@@ -26,35 +26,45 @@ def dashboard_view(request):
 
     for e in entries:
         line_labels.append(e.date.isoformat())
-        # ensure values are numeric
-        total = sum(int(v) for v in e.ratings.values())
-        line_values.append(total)
+        # compute per-day average across criteria
+        values = [int(v) for v in e.ratings.values()] if e.ratings else [0]
+        total = sum(values)
+        count = len(values) if len(values) > 0 else 1
+        avg = round(total / count, 2)
+        line_values.append(avg)
 
     # Monthly average bar chart
     month_data = defaultdict(list)
 
     for e in entries:
         month = e.date.strftime("%b")
-        total = sum(int(v) for v in e.ratings.values())
-        month_data[month].append(total)
+        values = [int(v) for v in e.ratings.values()] if e.ratings else [0]
+        total = sum(values)
+        count = len(values) if len(values) > 0 else 1
+        avg = round(total / count, 2)
+        month_data[month].append(avg)
 
     month_labels = list(month_data.keys())
-    month_scores = [sum(v) / len(v) for v in month_data.values()]
+    month_scores = [round(sum(v) / len(v), 2) for v in month_data.values()]
 
     # Heatmap score normalization
     daily_scores = [
-        {"date": e.date.isoformat(), "score": sum(int(v) for v in e.ratings.values())}
+        {
+            "date": e.date.isoformat(),
+            "score": round(sum([int(v) for v in e.ratings.values()]) / (len(e.ratings) if len(e.ratings) > 0 else 1), 2)
+        }
         for e in entries
     ]
 
     # prepare JSON-serializable data for template JS
     score_data = {d["date"]: d["score"] for d in daily_scores}
 
-    # pie chart counts (buckets aligned with heatmap colors)
-    excellent = sum(1 for d in daily_scores if d["score"] >= 120)
-    great = sum(1 for d in daily_scores if 100 <= d["score"] < 120)
-    average = sum(1 for d in daily_scores if 50 <= d["score"] < 100)
-    poor = sum(1 for d in daily_scores if d["score"] < 50)
+    # pie chart counts (5 categories) based on per-criterion average (1..5)
+    excellent = sum(1 for d in daily_scores if d["score"] >= 4.5)
+    very_good = sum(1 for d in daily_scores if 3.5 <= d["score"] < 4.5)
+    average = sum(1 for d in daily_scores if 2.5 <= d["score"] < 3.5)
+    below_avg = sum(1 for d in daily_scores if 1.5 <= d["score"] < 2.5)
+    poor = sum(1 for d in daily_scores if d["score"] < 1.5)
 
     return render(request, "dashboard.html", {
         "line_labels": json.dumps(line_labels),
@@ -65,9 +75,10 @@ def dashboard_view(request):
         "join_date": user.date_joined.date().isoformat(),
         "today": timezone.localdate().isoformat(),
         "excellent": excellent,
-        "good": great,
+        "very_good": very_good,
         "average": average,
-        "bad": poor,
+        "below_avg": below_avg,
+        "poor": poor,
     })
 
 
@@ -250,6 +261,14 @@ def daily_entry_view(request):
         for c in criterias:
             rating = int(request.POST.get(f"rating_{c.id}", 0))
             desc = request.POST.get(f"desc_{c.id}", "")
+            # sanitize rating
+            rating = max(1, min(5, rating))
+
+            # trim description to 30 words
+            desc_words = desc.split()
+            if len(desc_words) > 30:
+                desc = " ".join(desc_words[:30])
+
             ratings[c.name] = rating
             descriptions[c.name] = desc
 
@@ -260,6 +279,35 @@ def daily_entry_view(request):
         )
 
         messages.success(request, "Your daily entry is saved!")
-        return redirect("dashboard")
+        return redirect("daily")
 
-    return render(request, "daily_entry.html", {"criterias": criterias, "entry": entry, "today": today})
+    # prepare existing ratings/descriptions for template
+    existing_ratings = entry.ratings if entry else {}
+    existing_descriptions = entry.descriptions if entry else {}
+
+    return render(request, "daily_entry.html", {
+        "criteria": criterias,
+        "existing_ratings": existing_ratings,
+        "existing_descriptions": existing_descriptions,
+        "entry": entry,
+        "today": today,
+    })
+
+
+@login_required
+def social_view(request):
+    users = User.objects.all().order_by("username")
+    return render(request, "social.html", {"users": users})
+
+
+@login_required
+def daily_view(request):
+    user = request.user
+    today = timezone.localdate()
+
+    try:
+        entry = DailyEntry.objects.get(user=user, date=today)
+    except DailyEntry.DoesNotExist:
+        return redirect("daily-entry")
+
+    return render(request, "daily.html", {"entry": entry})

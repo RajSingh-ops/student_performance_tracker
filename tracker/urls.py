@@ -13,4 +13,6 @@ urlpatterns = [
     path("about-me/", views.about_me_view, name="about-me"),
     path("profile/", views.profile_view, name="profile"),
     path("profile/edit/", views.edit_profile_view, name="edit-profile"),
+    path("social/", views.social_view, name="social"),
+    path("daily/", views.daily_view, name="daily"),
 ]
