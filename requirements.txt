@@ -6,3 +6,5 @@ python-dotenv
 dj-database-url
 Pillow
 django-environ
+cloudinary
+django-cloudinary-storage
