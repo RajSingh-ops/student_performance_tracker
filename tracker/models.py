@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from cloudinary.models import CloudinaryField
 
 # ---------------------------------------------------------
 # 1. Criteria (max 5 per user)
@@ -101,17 +101,17 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(max_length=300, blank=True)
 
-    profile_image = models.ImageField(
-        upload_to=profile_upload_path,
-        default="default/profile.png",
-        blank=True
+    profile_image = CloudinaryField(
+        'profile_image',
+        blank=True,
+        null=True
+    )
+    header_image = CloudinaryField(
+        'header_image',
+        blank=True,
+        null=True
     )
 
-    header_image = models.ImageField(
-        upload_to=header_upload_path,
-        default="default/header.jpg",
-        blank=True
-    )
 
     instagram = models.URLField(blank=True)
     twitter = models.URLField(blank=True)
