@@ -317,3 +317,10 @@ def daily_view(request):
         return redirect("daily-entry")
 
     return render(request, "daily.html", {"entry": entry})
+
+def privacy_policy(request):
+    return render(request, "privacy_policy.html")
+
+def terms_conditions(request):
+    return render(request, "terms.html")
+

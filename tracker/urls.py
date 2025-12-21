@@ -15,4 +15,7 @@ urlpatterns = [
     path("profile/edit/", views.edit_profile_view, name="edit-profile"),
     path("social/", views.social_view, name="social"),
     path("daily/", views.daily_view, name="daily"),
+    path("privacy-policy/", views.privacy_policy, name="privacy-policy"),
+    path("terms/", views.terms_conditions, name="terms"),
+
 ]

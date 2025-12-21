@@ -19,18 +19,19 @@ def register_view(request):
         form = CustomRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-
-            # Send welcome email
-            send_mail(
-                "Welcome to Performance Tracker",
-                "Your account was created successfully!",
-                "yourgmail@gmail.com",   # sender
-                [user.email],             # receiver (from form)
-                fail_silently=False,
-            )
-
+            try:
+                send_mail(
+                    "Welcome to Performance Tracker",
+                    "Your account was created successfully!",
+                    "yourgmail@gmail.com",
+                    [user.email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print("Email error:", e)
             login(request, user)
             return redirect("dashboard")
+
     else:
         form = CustomRegisterForm()
 
