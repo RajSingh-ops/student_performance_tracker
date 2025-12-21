@@ -34,7 +34,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # Cloudinary
     "cloudinary",
     "cloudinary_storage",
 ]
