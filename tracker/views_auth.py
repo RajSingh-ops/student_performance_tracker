@@ -19,23 +19,26 @@ def register_view(request):
         form = CustomRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+
             try:
                 send_mail(
                     "Welcome to Performance Tracker",
                     "Your account was created successfully!",
                     "yourgmail@gmail.com",
                     [user.email],
-                    fail_silently=False,
+                    fail_silently=True,
                 )
             except Exception as e:
                 print("Email error:", e)
-            login(request, user)
-            return redirect("dashboard")
+
+            # IMPORTANT: DO NOT auto-login
+            return redirect("login")
 
     else:
         form = CustomRegisterForm()
 
     return render(request, "register.html", {"form": form})
+
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 
