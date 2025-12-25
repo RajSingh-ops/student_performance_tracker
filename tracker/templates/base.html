@@ -1,134 +1,162 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{% block title %}Performance Tracker{% endblock %}</title>
+    <meta charset="UTF-8">
+    <title>YearScore – Measure Your Growth</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap CSS -->
-    <link 
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
-        rel="stylesheet">
-    
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
-        .navbar {
-            background-image: url('https://i.pinimg.com/736x/e3/01/30/e3013093d29e3a23226831713c4a389a.jpg');
-            background-size: cover;
-            background-position: center;
-            position: relative;
+        body {
+            font-family: 'Segoe UI', sans-serif;
         }
-        
-        .navbar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            pointer-events: none;
+
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(
+                rgba(0,0,0,0.55),
+                rgba(0,0,0,0.55)
+            ),
+            url("https://images.unsplash.com/photo-1522202176988-66273c2fd55f") center/cover;
+            color: white;
+            display: flex;
+            align-items: center;
         }
-        
-        .navbar-brand {
-            position: relative;
-            z-index: 10;
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
         }
-        
-        .d-flex.align-items-center {
-            position: relative;
-            z-index: 10;
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+        }
+
+        /* FEATURE CARDS */
+        .feature-card {
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+        }
+
+        /* CTA */
+        .cta {
+            background: #111;
+            color: white;
+            border-radius: 20px;
+            padding: 40px;
+        }
+
+        footer {
+            background: #f8f9fa;
+            padding: 20px 0;
+            text-align: center;
+            font-size: 14px;
         }
     </style>
 </head>
 
-<body class="bg-light">
+<body>
 
-<nav class="navbar navbar-dark px-4 py-2" style="height: 20vh;">
-    <a class="navbar-brand" href="/">Performance Tracker</a>
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="container text-center">
+        <h1>YearScore</h1>
+        <p class="mx-auto mt-3">
+            Measure your daily performance, build consistency,  
+            and turn self-improvement into data.
+        </p>
 
-    <div class="d-flex align-items-center gap-3">
-
-        <!-- Daily Button -->
-        <a href="{% url 'daily' %}" class="btn btn-success btn-sm">Daily</a>
-
-        <!-- Social Button -->
-        <a href="{% url 'social' %}" class="btn btn-info btn-sm">Social</a>
-
-        <a href="{% url 'achievements' %}" class="btn btn-info btn-sm">Achievements</a>
-
-
-        <!-- Profile Icon with Dropdown -->
-        <div class="dropdown">
-            {% if request.user.profile.profile_image %}
-            <a
-                class="d-flex align-items-center justify-content-center rounded-circle text-white overflow-hidden"
-                href="#"
-                role="button"
-                id="profileDropdown"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                style="width: 40px; height: 40px; font-size: 18px; text-decoration:none;"
-            >
-                <img 
-                    src="{{ request.user.profile.profile_image.url }}" 
-                    alt="Profile" 
-                    style="width: 100%; height: 100%; object-fit: cover;">
-            </a>
+        <div class="mt-4">
+            {% if not user.is_authenticated %}
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4 me-2">
+                    Get Started
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4">
+                    Login
+                </a>
             {% else %}
-            <a
-                class="d-flex align-items-center justify-content-center rounded-circle bg-secondary text-white"
-                href="#"
-                role="button"
-                id="profileDropdown"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                style="width: 40px; height: 40px; font-size: 18px; text-decoration:none;"
-            >
-                {{ request.user.username|first|upper }}
-            </a>
+                <a href="{% url 'dashboard' %}" class="btn btn-success btn-lg px-5">
+                    Go to Dashboard
+                </a>
             {% endif %}
+        </div>
+    </div>
+</section>
 
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                <li><a class="dropdown-item" href="{% url 'profile' %}">View Profile</a></li>
-<li><a class="dropdown-item" href="{% url 'edit-profile' %}">Edit Profile</a></li>
-                <li><a class="dropdown-item" href="/criteria/">Edit Goals</a></li>
-                <li><a class="dropdown-item" href="/review/">Add Review</a></li>
-                <li><a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a></li>
-
-                <li><hr class="dropdown-divider"></li>
-
-                <li><a class="dropdown-item" href="#">About Website</a></li>
-                <li><a class="dropdown-item" href="{% url 'about-me' %}">About Me</a></li>
-            </ul>
+<!-- FEATURES -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Why YearScore?</h2>
+            <p class="text-muted">Designed for long-term growth, not short motivation</p>
         </div>
 
-        <a href="/accounts/logout/" class="btn btn-outline-light btn-sm">Logout</a>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="p-4 bg-white feature-card">
+                    <h4>📊 Track Daily Performance</h4>
+                    <p class="text-muted">
+                        Rate yourself daily on meaningful criteria and see real progress.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-4 bg-white feature-card">
+                    <h4>🔥 Visual Insights</h4>
+                    <p class="text-muted">
+                        Charts, heatmaps, and analytics that show your consistency.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-4 bg-white feature-card">
+                    <h4>🏆 Share Achievements</h4>
+                    <p class="text-muted">
+                        Celebrate wins and get inspired by others.
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
-</nav>
+</section>
 
+<!-- CTA -->
+<section class="container my-5">
+    <div class="cta text-center">
+        <h2>Start Building Consistency</h2>
+        <p class="text-muted mt-2">
+            Motivation fades. Systems win.
+        </p>
 
-<div class="container mt-4">
-    {% block content %}
-    {% endblock %}
-</div>
+        {% if not user.is_authenticated %}
+        <a href="{% url 'register' %}" class="btn btn-light btn-lg mt-3">
+            Create Free Account
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- FOOTER -->
 <footer>
-    <a href="{% url 'privacy-policy' %}">Privacy Policy</a> |
-    <a href="{% url 'terms' %}">Terms & Conditions</a>
-
+    <div>
+        <a href="{% url 'privacy-policy' %}">Privacy Policy</a> |
+        <a href="{% url 'terms' %}">Terms & Conditions</a>
+    </div>
+    <div class="mt-1 text-muted">
+        © {{ now|date:"Y" }} YearScore
+    </div>
 </footer>
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-document.querySelectorAll('.dropdown').forEach(function (dd) {
-    dd.addEventListener('mouseover', function () {
-        let dropdown = bootstrap.Dropdown.getOrCreateInstance(dd.querySelector('[data-bs-toggle="dropdown"]'));
-        dropdown.show();
-    });
-    dd.addEventListener('mouseleave', function () {
-        let dropdown = bootstrap.Dropdown.getOrCreateInstance(dd.querySelector('[data-bs-toggle="dropdown"]'));
-        dropdown.hide();
-    });
-});
-</script>
-
 
 </body>
 </html>
