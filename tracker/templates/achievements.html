@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Achievements{% endblock %}
+
+{% block content %}
+
+<h1>Achievements</h1>
+
+<!-- Hidden CSRF token for JavaScript -->
+<form style="display:none;">{% csrf_token %}</form>
+
+{% for a in achievements %}
+<div class="card mb-3">
+    <div class="card-body">
+
+        <strong>{{ a.user.username }}</strong>
+        <small class="text-muted">{{ a.created_at }}</small>
+
+        <h5>{{ a.title }}</h5>
+        <p>{{ a.description }}</p>
+
+        {% if a.image %}
+            <img src="{{ a.image.url }}" class="img-fluid rounded mb-2">
+        {% endif %}
+
+        <!-- BUTTONS -->
+        <div class="mt-2">
+            <!-- LIKE BUTTON -->
+            <button class="like-btn" data-id="{{ a.id }}">
+                ❤️ <span id="likes-{{ a.id }}">{{ a.achievementlike_set.count }}</span>
+            </button>
+
+            <!-- COMMENT BUTTON -->
+            <button class="comment-btn" data-id="{{ a.id }}">
+                💬 {{ a.achievementcomment_set.count }}
+            </button>
+        </div>
+
+        <!-- COMMENTS SECTION -->
+        <div id="comments-{{ a.id }}" style="display:none; margin-top:10px;">
+
+            {% for c in a.achievementcomment_set.all %}
+                <p>
+                    <b>{{ c.user.username }}</b>:
+                    {{ c.text|escape }}
+                </p>
+            {% endfor %}
+
+            {% if user.is_authenticated %}
+            <form method="POST" action="{% url 'add_comment' a.id %}">
+                {% csrf_token %}
+                <input type="text" name="comment" placeholder="Write reply..." required>
+                <button type="submit">Reply</button>
+            </form>
+            {% endif %}
+
+        </div>
+
+    </div>
+</div>
+{% empty %}
+<p>No achievements yet.</p>
+{% endfor %}
+
+<!-- JAVASCRIPT -->
+<script>
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+/* LIKE BUTTON */
+document.querySelectorAll(".like-btn").forEach(function(btn) {
+    btn.onclick = function() {
+        var id = btn.dataset.id;
+
+        fetch("/achievements/" + id + "/like/", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            }
+        })
+        .then(function(res) {
+            return res.json();
+        })
+        .then(function(data) {
+            document.getElementById("likes-" + id).innerText = data.likes;
+        });
+    };
+});
+
+/* COMMENT TOGGLE */
+document.querySelectorAll(".comment-btn").forEach(function(btn) {
+    btn.onclick = function() {
+        var id = btn.dataset.id;
+        var box = document.getElementById("comments-" + id);
+
+        if (box.style.display === "none") {
+            box.style.display = "block";
+        } else {
+            box.style.display = "none";
+        }
+    };
+});
+</script>
+
+{% endblock %}

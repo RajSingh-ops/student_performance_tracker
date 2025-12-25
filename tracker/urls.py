@@ -3,6 +3,11 @@ from .views import dashboard_view
 from .views_auth import register_view
 from .views import daily_entry_view,criteria_setup_view,password_reset_request,password_reset_verify
 from . import views
+from .views import (
+    achievements_page,
+    toggle_like,
+    add_comment
+)
 urlpatterns = [
     path('register/', register_view, name='register'),
     path('dashboard/', dashboard_view, name='dashboard'),
@@ -17,5 +22,13 @@ urlpatterns = [
     path("daily/", views.daily_view, name="daily"),
     path("privacy-policy/", views.privacy_policy, name="privacy-policy"),
     path("terms/", views.terms_conditions, name="terms"),
+    #Achievements feed page
+    path("achievements/", achievements_page, name="achievements"),
+
+    # Like / Unlike (AJAX)
+    path("achievements/<int:id>/like/", toggle_like, name="toggle_like"),
+
+    # Add comment
+    path("achievements/<int:id>/comment/", add_comment, name="add_comment"),
 
 ]

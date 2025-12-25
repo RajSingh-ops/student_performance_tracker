@@ -1,7 +1,7 @@
 from collections import defaultdict
 import random
 import json
-
+from .models import Achievement
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -11,6 +11,12 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+
+from .models import Achievement, AchievementLike, AchievementComment
 
 from .models import Criterion, DailyEntry, DailyScore, Profile, Review
 
@@ -323,4 +329,47 @@ def privacy_policy(request):
 
 def terms_conditions(request):
     return render(request, "terms.html")
+@login_required
+def create_achievement(request):
+    if request.method == "POST":
+        Achievement.objects.create(
+            user=request.user,
+            title=request.POST['title'],
+            description=request.POST.get('description', ''),
+            image=request.FILES.get('image')
+        )
+        return redirect('achievements')
+@login_required
+def achievements_page(request):
+    achievements = Achievement.objects.all().order_by("-created_at")
+    return render(request, "achievements.html", {
+        "achievements": achievements
+    })
+@login_required
+@require_POST
+def toggle_like(request, id):
+    achievement = get_object_or_404(Achievement, id=id)
+
+    like, created = AchievementLike.objects.get_or_create(
+        user=request.user,
+        achievement=achievement
+    )
+
+    if not created:
+        like.delete()
+
+    return JsonResponse({
+        "likes": AchievementLike.objects.filter(
+            achievement=achievement
+        ).count()
+    })
+@login_required
+@require_POST
+def add_comment(request, id):
+    AchievementComment.objects.create(
+        user=request.user,
+        achievement_id=id,
+        text=request.POST.get("comment")
+    )
+    return redirect("achievements")
 
