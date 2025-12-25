@@ -37,7 +37,7 @@ def register_view(request):
     else:
         form = CustomRegisterForm()
 
-    return render(request, "register.html", {"form": form})
+    return render(request, "templates/register.html", {"form": form})
 
 from django.contrib.auth import logout
 from django.shortcuts import redirect
