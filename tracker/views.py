@@ -334,11 +334,15 @@ def create_achievement(request):
     if request.method == "POST":
         Achievement.objects.create(
             user=request.user,
-            title=request.POST['title'],
-            description=request.POST.get('description', ''),
-            image=request.FILES.get('image')
+            title=request.POST.get("title"),
+            description=request.POST.get("description", ""),
+            image=request.FILES.get("image")
         )
-        return redirect('achievements')
+        return redirect("achievements")
+
+    # If someone opens /create/ directly
+    return redirect("achievements")
+
 @login_required
 def achievements_page(request):
     achievements = Achievement.objects.all().order_by("-created_at")
