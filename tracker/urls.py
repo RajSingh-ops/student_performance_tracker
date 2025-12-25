@@ -7,7 +7,8 @@ from .views import (
     achievements_page,
     toggle_like,
     add_comment,
-    create_achievement
+    create_achievement,
+    landing_page
 )
 urlpatterns = [
     path('register/', register_view, name='register'),
@@ -32,5 +33,7 @@ urlpatterns = [
 
     # Add comment
     path("achievements/<int:id>/comment/", add_comment, name="add_comment"),
+
+    path("", landing_page, name="landing"),
 
 ]

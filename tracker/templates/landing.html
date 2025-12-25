@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}YearScore – Track Your Growth{% endblock %}
+
+{% block content %}
+
+<div style="text-align:center; padding:40px 10px;">
+
+    <h1 style="font-size:36px;">YearScore</h1>
+    <p style="font-size:18px; max-width:700px; margin:10px auto;">
+        Track your daily performance, measure consistency, and improve your life — one day at a time.
+    </p>
+
+    {% if not user.is_authenticated %}
+        <div style="margin-top:20px;">
+            <a href="{% url 'register' %}">
+                <button style="padding:10px 20px; font-size:16px;">Get Started</button>
+            </a>
+            <a href="{% url 'login' %}">
+                <button style="padding:10px 20px; font-size:16px; margin-left:10px;">
+                    Login
+                </button>
+            </a>
+        </div>
+    {% else %}
+        <div style="margin-top:20px;">
+            <a href="{% url 'dashboard' %}">
+                <button style="padding:10px 20px; font-size:16px;">
+                    Go to Dashboard
+                </button>
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+
+<hr>
+
+<div style="max-width:900px; margin:40px auto; padding:0 15px;">
+
+    <h2>Why YearScore?</h2>
+    <ul>
+        <li>📊 Track daily performance using custom criteria</li>
+        <li>🔥 Visualize progress with charts and insights</li>
+        <li>🏆 Share achievements with others</li>
+        <li>🧠 Build consistency instead of relying on motivation</li>
+    </ul>
+
+    <h2 style="margin-top:30px;">Who is it for?</h2>
+    <ul>
+        <li>Students</li>
+        <li>Developers</li>
+        <li>Self-improvement enthusiasts</li>
+        <li>Anyone who wants measurable growth</li>
+    </ul>
+
+</div>
+
+<hr>
+
+<div style="text-align:center; padding:30px 10px;">
+    <h2>Start Improving Today</h2>
+    <p>It takes less than a minute to begin.</p>
+
+    {% if not user.is_authenticated %}
+        <a href="{% url 'register' %}">
+            <button style="padding:10px 25px; font-size:16px;">
+                Create Free Account
+            </button>
+        </a>
+    {% endif %}
+</div>
+
+{% endblock %}
