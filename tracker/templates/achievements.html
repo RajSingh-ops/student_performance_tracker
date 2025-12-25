@@ -5,6 +5,27 @@
 
 <h1>Achievements</h1>
 
+{% if user.is_authenticated %}
+<button onclick="toggleAddForm()" style="margin-bottom:15px;">
+    ➕ Add Achievement
+</button>
+
+<div id="add-achievement-form" style="display:none; margin-bottom:20px;">
+    <form method="POST" action="{% url 'create_achievement' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <input type="text" name="title" placeholder="Achievement title" required><br><br>
+
+        <textarea name="description" placeholder="Description (optional)"></textarea><br><br>
+
+        <input type="file" name="image" accept="image/*"><br><br>
+
+        <button type="submit">Post</button>
+        <button type="button" onclick="toggleAddForm()">Cancel</button>
+    </form>
+</div>
+{% endif %}
+
 <!-- Hidden CSRF token for JavaScript -->
 <form style="display:none;">{% csrf_token %}</form>
 
@@ -24,20 +45,17 @@
 
         <!-- BUTTONS -->
         <div class="mt-2">
-            <!-- LIKE BUTTON -->
             <button class="like-btn" data-id="{{ a.id }}">
                 ❤️ <span id="likes-{{ a.id }}">{{ a.achievementlike_set.count }}</span>
             </button>
 
-            <!-- COMMENT BUTTON -->
             <button class="comment-btn" data-id="{{ a.id }}">
                 💬 {{ a.achievementcomment_set.count }}
             </button>
         </div>
 
-        <!-- COMMENTS SECTION -->
+        <!-- COMMENTS -->
         <div id="comments-{{ a.id }}" style="display:none; margin-top:10px;">
-
             {% for c in a.achievementcomment_set.all %}
                 <p>
                     <b>{{ c.user.username }}</b>:
@@ -52,7 +70,6 @@
                 <button type="submit">Reply</button>
             </form>
             {% endif %}
-
         </div>
 
     </div>
@@ -65,6 +82,16 @@
 <script>
 function getCSRFToken() {
     return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+/* ADD FORM TOGGLE */
+function toggleAddForm() {
+    var form = document.getElementById("add-achievement-form");
+    if (form.style.display === "none") {
+        form.style.display = "block";
+    } else {
+        form.style.display = "none";
+    }
 }
 
 /* LIKE BUTTON */

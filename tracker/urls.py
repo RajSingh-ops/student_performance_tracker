@@ -6,7 +6,8 @@ from . import views
 from .views import (
     achievements_page,
     toggle_like,
-    add_comment
+    add_comment,
+    create_achievement
 )
 urlpatterns = [
     path('register/', register_view, name='register'),
@@ -24,6 +25,7 @@ urlpatterns = [
     path("terms/", views.terms_conditions, name="terms"),
     #Achievements feed page
     path("achievements/", achievements_page, name="achievements"),
+    path("achievements/create/", create_achievement, name="create_achievement"),
 
     # Like / Unlike (AJAX)
     path("achievements/<int:id>/like/", toggle_like, name="toggle_like"),
