@@ -376,4 +376,6 @@ def add_comment(request, id):
         text=request.POST.get("comment")
     )
     return redirect("achievements")
+def landing_page(request):
+    return render(request, "landing.html")
 
