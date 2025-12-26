@@ -19,7 +19,7 @@ ALLOWED_HOSTS = os.environ.get(
 ).split(",")
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://yearscore.onrender.com",
+    "https://build2026.onrender.com",
 ]
 
 # =========================
