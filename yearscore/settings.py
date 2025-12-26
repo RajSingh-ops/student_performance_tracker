@@ -12,7 +12,7 @@ SECRET_KEY = os.environ.get(
 )
 
 # DEBUG = os.environ.get("DEBUG", "False") == "True"
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
     "localhost,127.0.0.1"
