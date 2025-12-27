@@ -33,7 +33,7 @@ urlpatterns = [
 
     # Add comment
     path("achievements/<int:id>/comment/", add_comment, name="add_comment"),
-
+    path("/aboutwebsite", views.about_page, name="about website"),
     path("", landing_page, name="landing"),
 
 ]
