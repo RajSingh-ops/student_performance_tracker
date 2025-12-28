@@ -33,6 +33,19 @@
         </div>
     {% endfor %}
 
+    <!-- ✅ NEW: Overall Reflection -->
+    <div class="mb-4">
+        <label class="form-label fw-semibold">
+            Overall reflection (optional)
+        </label>
+        <textarea
+            name="reflection"
+            class="form-control"
+            rows="4"
+            placeholder="How was your day overall? Mood, focus, stress, wins, distractions…"
+        >{{ entry.reflection|default_if_none:"" }}</textarea>
+    </div>
+
     <button type="submit" class="btn btn-primary w-100">Save</button>
 </form>
 

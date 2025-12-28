@@ -25,11 +25,11 @@ class DailyEntry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="entries")
     date = models.DateField()
 
-    # Example stored JSON:
-    # ratings = {"Study": 4, "Coding": 3}
-    # descriptions = {"Study": "Read OS chapter", "Coding": "Solved 2 problems"}
     ratings = models.JSONField()
     descriptions = models.JSONField()
+
+    # ✅ NEW FIELD (single writing space)
+    reflection = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -37,8 +37,6 @@ class DailyEntry(models.Model):
         unique_together = ("user", "date")
         ordering = ["-date"]
 
-    def __str__(self):
-        return f"{self.user.username} - {self.date}"
 
 
 # ---------------------------------------------------------

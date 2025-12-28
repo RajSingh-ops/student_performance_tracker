@@ -273,10 +273,9 @@ def daily_entry_view(request):
         for c in criterias:
             rating = int(request.POST.get(f"rating_{c.id}", 0))
             desc = request.POST.get(f"desc_{c.id}", "")
-            # sanitize rating
+
             rating = max(1, min(5, rating))
 
-            # trim description to 30 words
             desc_words = desc.split()
             if len(desc_words) > 30:
                 desc = " ".join(desc_words[:30])
@@ -284,16 +283,22 @@ def daily_entry_view(request):
             ratings[c.name] = rating
             descriptions[c.name] = desc
 
+        # ✅ NEW: single reflection field
+        reflection = request.POST.get("reflection", "").strip()
+
         DailyEntry.objects.update_or_create(
             user=user,
             date=today,
-            defaults={"ratings": ratings, "descriptions": descriptions},
+            defaults={
+                "ratings": ratings,
+                "descriptions": descriptions,
+                "reflection": reflection,   # ✅ added
+            },
         )
 
         messages.success(request, "Your daily entry is saved!")
         return redirect("daily")
 
-    # prepare existing ratings/descriptions for template
     existing_ratings = entry.ratings if entry else {}
     existing_descriptions = entry.descriptions if entry else {}
 
@@ -304,6 +309,7 @@ def daily_entry_view(request):
         "entry": entry,
         "today": today,
     })
+
 
 
 @login_required
@@ -381,3 +387,59 @@ def landing_page(request):
 
 def about_page(request):
     return render(request, "about.html")
+from django.views.decorators.http import require_POST
+from django.conf import settings
+import google.generativeai as genai
+
+@require_POST
+@login_required
+def analyze_entry(request):
+    user = request.user
+    today = timezone.localdate()
+
+    entry = get_object_or_404(DailyEntry, user=user, date=today)
+
+    # Prepare text for Gemini
+    ratings_text = "\n".join(
+        [f"{k}: {v}/5" for k, v in entry.ratings.items()]
+    )
+
+    reflection = entry.reflection or "No reflection provided."
+
+    prompt = f"""
+You are a self-improvement coach.
+
+Ratings:
+{ratings_text}
+
+User reflection:
+{reflection}
+
+Give:
+1. A short score out of 100
+2. A brief explanation (max 5 lines)
+"""
+
+    genai.configure(api_key=settings.GEMINI_API_KEY)
+    model = genai.GenerativeModel("gemini-pro")
+
+    response = model.generate_content(prompt)
+    output = response.text.strip()
+
+    # Very simple score extraction
+    score = 0
+    for word in output.split():
+        if word.isdigit():
+            score = min(int(word), 100)
+            break
+
+    DailyScore.objects.update_or_create(
+        entry=entry,
+        defaults={
+            "score": score,
+            "explanation": output
+        }
+    )
+
+    messages.success(request, "Analysis complete!")
+    return redirect("daily")

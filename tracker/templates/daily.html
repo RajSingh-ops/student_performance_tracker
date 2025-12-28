@@ -29,6 +29,20 @@
                 <a href="{% url 'dashboard' %}" class="btn btn-primary">Back to Dashboard</a>
             </div>
         </div>
+        <form method="post" action="{% url 'analyze-entry' %}">
+    {% csrf_token %}
+    <button class="btn btn-dark mt-3">
+        Analyze my day
+    </button>
+</form>
+{% if entry.score %}
+<div class="card mt-4 p-3 shadow-sm">
+    <h5>AI Analysis</h5>
+    <p><strong>Score:</strong> {{ entry.score.score }}/100</p>
+    <p>{{ entry.score.explanation }}</p>
+</div>
+{% endif %}
+
     </div>
 </div>
 {% endblock %}
