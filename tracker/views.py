@@ -382,39 +382,37 @@ def analyze_entry(request):
 
     entry = get_object_or_404(DailyEntry, user=user, date=today)
 
-    # Prepare text for Gemini
+    # Prepare ratings text
     ratings_text = "\n".join(
-        [f"{k}: {v}/5" for k, v in entry.ratings.items()]
+        f"{k}: {v}/5" for k, v in entry.ratings.items()
     )
 
     reflection = entry.reflection or "No reflection provided."
 
     prompt = f"""
-You are a self-improvement coach.
+Here is the user's daily performance.
 
 Ratings:
 {ratings_text}
 
-User reflection:
+Overall reflection:
 {reflection}
 
-Give:
-1. A short score out of 100
-2. A brief explanation (max 5 lines)
+Task:
+Give short advice and motivation in under 100 characters.
+Be positive, practical, and encouraging.
 """
 
     genai.configure(api_key=settings.GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-pro")
 
+    # ✅ Correct placement
+    model = genai.GenerativeModel("models/gemini-2.5-flash")
     response = model.generate_content(prompt)
     output = response.text.strip()
 
-    # Very simple score extraction
-    score = 0
-    for word in output.split():
-        if word.isdigit():
-            score = min(int(word), 100)
-            break
+    # ✅ Calculate score from ratings (NOT from AI text)
+    avg_rating = sum(entry.ratings.values()) / len(entry.ratings)
+    score = int((avg_rating / 5) * 100)
 
     DailyScore.objects.update_or_create(
         entry=entry,
