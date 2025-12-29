@@ -257,33 +257,19 @@ def daily_entry_view(request):
     today = timezone.localdate()
 
     criterias = Criterion.objects.filter(user=user).order_by("order")
-
     if not criterias.exists():
         return redirect("criteria")
 
-    try:
-        entry = DailyEntry.objects.get(user=user, date=today)
-    except DailyEntry.DoesNotExist:
-        entry = None
+    entry = DailyEntry.objects.filter(user=user, date=today).first()
 
     if request.method == "POST":
         ratings = {}
-        descriptions = {}
 
         for c in criterias:
-            rating = int(request.POST.get(f"rating_{c.id}", 0))
-            desc = request.POST.get(f"desc_{c.id}", "")
-
+            rating = int(request.POST.get(f"rating_{c.id}", 1))
             rating = max(1, min(5, rating))
-
-            desc_words = desc.split()
-            if len(desc_words) > 30:
-                desc = " ".join(desc_words[:30])
-
             ratings[c.name] = rating
-            descriptions[c.name] = desc
 
-        # ✅ NEW: single reflection field
         reflection = request.POST.get("reflection", "").strip()
 
         DailyEntry.objects.update_or_create(
@@ -291,24 +277,20 @@ def daily_entry_view(request):
             date=today,
             defaults={
                 "ratings": ratings,
-                "descriptions": descriptions,
-                "reflection": reflection,   # ✅ added
+                "reflection": reflection,
             },
         )
 
         messages.success(request, "Your daily entry is saved!")
         return redirect("daily")
 
-    existing_ratings = entry.ratings if entry else {}
-    existing_descriptions = entry.descriptions if entry else {}
-
     return render(request, "daily_entry.html", {
         "criteria": criterias,
-        "existing_ratings": existing_ratings,
-        "existing_descriptions": existing_descriptions,
+        "existing_ratings": entry.ratings if entry else {},
         "entry": entry,
         "today": today,
     })
+
 
 
 
@@ -329,6 +311,7 @@ def daily_view(request):
         return redirect("daily-entry")
 
     return render(request, "daily.html", {"entry": entry})
+
 
 def privacy_policy(request):
     return render(request, "privacy_policy.html")

@@ -26,7 +26,7 @@ class DailyEntry(models.Model):
     date = models.DateField()
 
     ratings = models.JSONField()
-    descriptions = models.JSONField()
+    
 
     # ✅ NEW FIELD (single writing space)
     reflection = models.TextField(blank=True)
