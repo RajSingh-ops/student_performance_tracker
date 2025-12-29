@@ -1,121 +1,184 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Privacy Policy | YearScore</title>
 
-{% block title %}
-Privacy Policy | Yearscore
-{% endblock %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Privacy Policy for YearScore. Learn how we collect, use, and protect your personal information.">
 
-{% block content %}
-<div class="container" style="max-width: 900px; margin: auto; padding: 20px;">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: #ffffff;
+            color: #212529;
+        }
+
+        .policy-container {
+            max-width: 900px;
+            margin: 60px auto;
+            padding: 0 16px;
+        }
+
+        h1 {
+            font-weight: 700;
+        }
+
+        h3 {
+            margin-top: 40px;
+            font-weight: 600;
+        }
+
+        hr {
+            margin: 32px 0;
+        }
+
+        footer {
+            margin-top: 80px;
+            padding: 24px 0;
+            font-size: 14px;
+            background: #f8f9fa;
+            text-align: center;
+        }
+
+        footer a {
+            color: #555;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/doobd64zf/image/upload/v1766846132/Screenshot_2025-12-27_193930_gqn96z.png">
+</head>
+
+<body>
+
+<div class="policy-container">
 
     <h1>Privacy Policy</h1>
-    <p><strong>Last updated:</strong> {{ last_updated|default:"September 2025" }}</p>
-
-    <p>
-        Welcome to <strong>Yearscore (Performance Tracker)</strong>.
-        Your privacy is important to us.
+    <p class="text-muted">
+        Last updated: September 2025
     </p>
 
     <p>
-        This Privacy Policy explains how we collect, use, and protect your information
-        when you use our website.
+        Welcome to <strong>YearScore</strong>.
+        Your privacy is important to us. This Privacy Policy explains how we collect,
+        use, and protect your information when you use our website and services.
     </p>
 
     <hr>
 
     <h3>1. Information We Collect</h3>
 
-    <h4>Personal Information</h4>
+    <p class="fw-semibold mt-3">Personal Information</p>
     <ul>
-        <li>Username and email address during registration</li>
-        <li>Profile information such as bio or uploaded images (if provided)</li>
+        <li>Username and email address during account registration</li>
+        <li>Profile information you choose to provide</li>
     </ul>
 
-    <h4>Usage Data</h4>
+    <p class="fw-semibold mt-3">Usage Information</p>
     <ul>
-        <li>Pages visited</li>
-        <li>Time spent on the site</li>
-        <li>Device and browser information (collected automatically)</li>
+        <li>Pages visited and features used</li>
+        <li>Time spent on the platform</li>
+        <li>Device and browser information</li>
     </ul>
 
     <hr>
 
-    <h3>2. Cookies and Advertising</h3>
+    <h3>2. Cookies and Tracking</h3>
     <p>
-        We use <strong>Google AdSense</strong> to display advertisements.
+        YearScore may use cookies and similar technologies to enhance user experience,
+        analyze usage, and maintain basic site functionality.
     </p>
-
     <p>
-        Google may use cookies and web beacons to:
-    </p>
-    <ul>
-        <li>Show ads based on your visits to this and other websites</li>
-        <li>Deliver more relevant advertisements</li>
-    </ul>
-
-    <p>
-        Users may opt out of personalized advertising by visiting:
-        <br>
-        <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">
-            https://adssettings.google.com
-        </a>
+        You can disable cookies through your browser settings, though some features
+        may not function properly.
     </p>
 
     <hr>
 
     <h3>3. How We Use Your Information</h3>
     <ul>
-        <li>Provide and improve our services</li>
-        <li>Maintain user accounts</li>
-        <li>Display personalized performance insights</li>
-        <li>Serve advertisements via Google AdSense</li>
+        <li>To provide and maintain our services</li>
+        <li>To improve features and user experience</li>
+        <li>To manage user accounts</li>
+        <li>To analyze usage patterns</li>
     </ul>
 
     <hr>
 
-    <h3>4. Data Security</h3>
+    <h3>4. Advertising and Analytics</h3>
     <p>
-        We take reasonable measures to protect your information.
-        However, no method of transmission over the Internet is 100% secure.
+        We may work with third-party analytics or advertising partners to better
+        understand how our platform is used and to support the sustainability
+        of our services.
+    </p>
+    <p>
+        These partners may use cookies or similar technologies in accordance with
+        their own privacy policies.
     </p>
 
     <hr>
 
-    <h3>5. Third-Party Services</h3>
+    <h3>5. Data Security</h3>
     <p>
-        We may use third-party services such as:
-    </p>
-    <ul>
-        <li>Google AdSense</li>
-        <li>Cloudinary (for image storage)</li>
-    </ul>
-    <p>
-        These services have their own privacy policies.
+        We implement reasonable safeguards to protect your personal information.
+        However, no method of transmission over the internet is completely secure,
+        and absolute security cannot be guaranteed.
     </p>
 
     <hr>
 
-    <h3>6. Children’s Information</h3>
+    <h3>6. Third-Party Services</h3>
     <p>
-        Yearscore does not knowingly collect personal information from children under the age of 13.
+        YearScore may integrate third-party services (such as cloud storage providers)
+        to support certain features. These services operate under their own privacy
+        policies.
     </p>
 
     <hr>
 
-    <h3>7. Changes to This Policy</h3>
+    <h3>7. Children’s Privacy</h3>
     <p>
-        We may update this Privacy Policy from time to time.
-        Any changes will be posted on this page.
+        YearScore is not intended for individuals under the age of 13.
+        We do not knowingly collect personal information from children.
     </p>
 
     <hr>
 
-    <h3>8. Contact Us</h3>
+    <h3>8. Changes to This Policy</h3>
     <p>
-        If you have any questions about this Privacy Policy, you can contact us at:
+        This Privacy Policy may be updated from time to time.
+        Any changes will be posted on this page with an updated revision date.
     </p>
+
+    <hr>
+
+    <h3>9. Contact Information</h3>
     <p>
-    <strong>yearscoretracker@gmail.com</strong>
+        If you have any questions regarding this Privacy Policy, please contact us at:
+    </p>
+    <p class="fw-semibold">
+        yearscoretracker@gmail.com
     </p>
 
 </div>
-{% endblock %}
+
+<footer>
+    <div>
+        <a href="/">Home</a> ·
+        <a href="/terms/">Terms & Conditions</a>
+    </div>
+    <div class="text-muted mt-1">
+        © 2025 YearScore
+    </div>
+</footer>
+
+</body>
+</html>

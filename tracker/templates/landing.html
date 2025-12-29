@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>YearScore – Measure Your Growth</title>
+    <title>YearScore – Measure Your Growth Consistently</title>
+
+    <!-- SEO -->
+    <meta name="description" content="YearScore helps you track daily performance, build consistency, and measure personal growth with data-driven insights.">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap -->
@@ -10,18 +13,15 @@
 
     <style>
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: #ffffff;
+            color: #212529;
         }
 
         /* HERO */
         .hero {
-            min-height: 100vh;
-            background: linear-gradient(
-                rgba(0,0,0,0.55),
-                rgba(0,0,0,0.55)
-            ),
-            url("https://images.unsplash.com/photo-1522202176988-66273c2fd55f") center/cover;
-            color: white;
+            min-height: 90vh;
+            background: linear-gradient(135deg, #eef2ff, #f8fafc);
             display: flex;
             align-items: center;
         }
@@ -32,58 +32,67 @@
         }
 
         .hero p {
-            font-size: 1.2rem;
-            max-width: 600px;
+            font-size: 1.1rem;
+            max-width: 620px;
+            color: #555;
         }
 
-        /* FEATURE CARDS */
+        /* FEATURES */
         .feature-card {
-            border-radius: 16px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-            transition: transform 0.3s;
+            border-radius: 14px;
+            border: 1px solid #e9ecef;
+            transition: transform 0.2s ease;
+            background: #fff;
         }
 
         .feature-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-4px);
         }
 
         /* CTA */
         .cta {
-            background: #111;
+            background: #111827;
             color: white;
-            border-radius: 20px;
-            padding: 40px;
+            border-radius: 16px;
+            padding: 48px 32px;
         }
 
         footer {
             background: #f8f9fa;
-            padding: 20px 0;
-            text-align: center;
+            padding: 24px 0;
             font-size: 14px;
         }
+
+        footer a {
+            text-decoration: none;
+            color: #555;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
     </style>
+
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/doobd64zf/image/upload/v1766846132/Screenshot_2025-12-27_193930_gqn96z.png">
-    
-    <link rel="apple-touch-icon" href="https://res.cloudinary.com/doobd64zf/image/upload/v1766846132/Screenshot_2025-12-27_193930_gqn96z.png">
 </head>
 
 <body>
 
-<!-- HERO SECTION -->
+<!-- HERO -->
 <section class="hero">
     <div class="container text-center">
         <h1>YearScore</h1>
         <p class="mx-auto mt-3">
-            Measure your daily performance, build consistency,  
-            and turn self-improvement into data.
+            A simple system to track daily performance,  
+            build consistency, and measure long-term growth.
         </p>
 
         <div class="mt-4">
             {% if not user.is_authenticated %}
                 <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4 me-2">
-                    Get Started
+                    Get Started Free
                 </a>
-                <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4">
+                <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg px-4">
                     Login
                 </a>
             {% else %}
@@ -99,34 +108,36 @@
 <section class="py-5">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="fw-bold">Why YearScore?</h2>
-            <p class="text-muted">Designed for long-term growth, not short motivation</p>
+            <h2 class="fw-bold">How YearScore Helps</h2>
+            <p class="text-muted">
+                Focus on systems, not short-term motivation
+            </p>
         </div>
 
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="p-4 bg-white feature-card">
-                    <h4>📊 Track Daily Performance</h4>
-                    <p class="text-muted">
-                        Rate yourself daily on meaningful criteria and see real progress.
+                <div class="p-4 feature-card h-100">
+                    <h5>📊 Daily Performance Tracking</h5>
+                    <p class="text-muted mt-2">
+                        Rate yourself on meaningful criteria and stay accountable every day.
                     </p>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="p-4 bg-white feature-card">
-                    <h4>🔥 Visual Insights</h4>
-                    <p class="text-muted">
-                        Charts, heatmaps, and analytics that show your consistency.
+                <div class="p-4 feature-card h-100">
+                    <h5>📈 Visual Progress Insights</h5>
+                    <p class="text-muted mt-2">
+                        See trends, consistency patterns, and growth over time.
                     </p>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="p-4 bg-white feature-card">
-                    <h4>🏆 Share Achievements</h4>
-                    <p class="text-muted">
-                        Celebrate wins and get inspired by others.
+                <div class="p-4 feature-card h-100">
+                    <h5>🏆 Achievements & Reflection</h5>
+                    <p class="text-muted mt-2">
+                        Track wins, reflect on setbacks, and improve with clarity.
                     </p>
                 </div>
             </div>
@@ -137,14 +148,14 @@
 <!-- CTA -->
 <section class="container my-5">
     <div class="cta text-center">
-        <h2>Start Building Consistency</h2>
-        <p class="text-muted mt-2">
-            Motivation fades. Systems win.
+        <h2>Build Consistency, Not Pressure</h2>
+        <p class="mt-2 text-secondary">
+            Sustainable growth comes from systems that compound daily.
         </p>
 
         {% if not user.is_authenticated %}
         <a href="{% url 'register' %}" class="btn btn-light btn-lg mt-3">
-            Create Free Account
+            Create Your Free Account
         </a>
         {% endif %}
     </div>
@@ -152,14 +163,16 @@
 
 <!-- FOOTER -->
 <footer>
-    <div>
-        <a href="{% url 'privacy-policy' %}">Privacy Policy</a> |
-        <a href="{% url 'terms' %}">Terms & Conditions</a>
-    </div>
-    <div class="mt-1 text-muted">
-        © {{ now|date:"Y" }} YearScore
+    <div class="container text-center">
+        <div>
+            <a href="{% url 'privacy-policy' %}">Privacy Policy</a> ·
+            <a href="{% url 'terms' %}">Terms & Conditions</a>
+        </div>
+        <div class="mt-2 text-muted">
+            © {{ now|date:"Y" }} YearScore
+        </div>
     </div>
 </footer>
-
+<script type="text/javascript"> var infolinks_pid = 3442495; var infolinks_wsid = 0; </script> <script type="text/javascript" src="//resources.infolinks.com/js/infolinks_main.js"></script>
 </body>
 </html>
