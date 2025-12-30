@@ -14,6 +14,9 @@ class CustomLoginView(LoginView):
             return redirect("dashboard")
         return super().dispatch(request, *args, **kwargs)
 
+from django.conf import settings
+from django.core.mail import send_mail
+
 def register_view(request):
     if request.method == "POST":
         form = CustomRegisterForm(request.POST)
@@ -22,22 +25,22 @@ def register_view(request):
 
             try:
                 send_mail(
-                    "Welcome to Performance Tracker",
-                    "Your account was created successfully!",
-                    "yourgmail@gmail.com",
-                    [user.email],
-                    fail_silently=True,
+                    subject="Welcome to Performance Tracker",
+                    message="Your account was created successfully!",
+                    from_email=settings.DEFAULT_FROM_EMAIL,  # ✅ FIX
+                    recipient_list=[user.email],
+                    fail_silently=False,  # keep False for now
                 )
             except Exception as e:
                 print("Email error:", e)
 
-            # IMPORTANT: DO NOT auto-login
             return redirect("login")
 
     else:
         form = CustomRegisterForm()
 
     return render(request, "register.html", {"form": form})
+
 
 from django.contrib.auth import logout
 from django.shortcuts import redirect

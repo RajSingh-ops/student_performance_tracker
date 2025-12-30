@@ -120,6 +120,8 @@ def criteria_setup_view(request):
     return render(request, "criteria_setup.html")
 
 
+from django.conf import settings
+
 def password_reset_request(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -134,18 +136,24 @@ def password_reset_request(request):
         request.session["reset_email"] = email
         request.session["reset_otp"] = otp
 
-        send_mail(
-            "Your OTP for Password Reset",
-            f"Your OTP code is: {otp}",
-            "your_email@gmail.com",
-            [email],
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                "Your OTP for Password Reset",
+                f"Your OTP code is: {otp}",
+                settings.DEFAULT_FROM_EMAIL,  # ✅ FIX
+                [email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print("Password reset email error:", e)
+            messages.error(request, "Email service temporarily unavailable.")
+            return redirect("password-reset")
 
         messages.success(request, "OTP sent to your email.")
         return redirect("password-reset-verify")
 
     return render(request, "registration/password_reset_email.html")
+
 
 
 def password_reset_verify(request):
