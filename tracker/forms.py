@@ -3,8 +3,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
 class CustomRegisterForm(UserCreationForm):
-    email = forms.EmailField(required=True)
-
+    # We removed the email field entirely
+    
     class Meta:
         model = User
-        fields = ["username", "email", "password1", "password2"]
+        # We only list 'username' here. 
+        # UserCreationForm automatically adds the two password fields.
+        fields = ["username"]

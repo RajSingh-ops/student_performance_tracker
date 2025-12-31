@@ -16,26 +16,18 @@ class CustomLoginView(LoginView):
 
 from django.conf import settings
 from django.core.mail import send_mail
+from django.shortcuts import render, redirect
+from .forms import CustomRegisterForm
+from django.contrib import messages
 
 def register_view(request):
     if request.method == "POST":
         form = CustomRegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-
-            try:
-                send_mail(
-                    subject="Welcome to Performance Tracker",
-                    message="Your account was created successfully!",
-                    from_email=settings.DEFAULT_FROM_EMAIL,  # ✅ FIX
-                    recipient_list=[user.email],
-                    fail_silently=False,  # keep False for now
-                )
-            except Exception as e:
-                print("Email error:", e)
-
+            form.save()
+            # Optional: Add a success message so the user knows it worked
+            messages.success(request, "Account created successfully! You can now login.")
             return redirect("login")
-
     else:
         form = CustomRegisterForm()
 
