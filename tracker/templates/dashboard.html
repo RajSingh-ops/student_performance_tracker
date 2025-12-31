@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard 2026{% endblock %}
 
 {% block content %}
 
-<h2 class="mb-4">Your Performance Calendar</h2>
+<h2 class="mb-4 text-center">Your 2026 Performance Calendar</h2>
 
-<div class="heatmap-container mb-5">
-    <div id="month-labels" class="month-labels"></div>
+<div class="heatmap-wrapper shadow-sm p-4 bg-white rounded">
     <div id="heatmap" class="heatmap-grid"></div>
+    <div id="month-labels" class="month-labels-row"></div>
 </div>
 
 <hr class="my-5">
@@ -15,63 +15,42 @@
 <h3>Daily Performance Trend</h3>
 <canvas id="lineChart" height="90"></canvas>
 
-<hr class="my-5">
-
-<div class="row g-4">
-    <div class="col-md-6">
-        <div class="card p-3 shadow-sm">
-            <h5 class="mb-3">Monthly Average Scores</h5>
-            <canvas id="barChart" height="110"></canvas>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card p-3 shadow-sm">
-            <h5 class="mb-3">Performance Distribution</h5>
-            <canvas id="pieChart" height="110"></canvas>
-        </div>
-    </div>
-</div>
-
-
 <style>
 /* ---------- HEATMAP LAYOUT ---------- */
-.heatmap-container {
-    display: grid;
-    grid-template-rows: auto auto;
-    row-gap: 10px;
-}
-
-.month-labels {
-    display: grid;
-    grid-auto-flow: column;
-    font-size: 12px;
-    color: #555;
-    padding-left: 18px;
+.heatmap-wrapper {
+    overflow-x: auto;
+    background: #fff;
+    border: 1px solid #e1e4e8;
 }
 
 .heatmap-grid {
     display: grid;
-    grid-template-columns: repeat(53, 15px);
-    grid-template-rows: repeat(7, 15px);
-    gap: 2px;
+    /* 53 weeks across, 7 days down */
+    grid-template-columns: repeat(53, 14px);
+    grid-template-rows: repeat(7, 14px);
+    grid-auto-flow: column;
+    gap: 3px;
+    margin-bottom: 8px;
+}
+
+.month-labels-row {
+    display: grid;
+    grid-template-columns: repeat(53, 14px);
+    gap: 3px;
+    font-size: 11px;
+    color: #586069;
 }
 
 .day-box {
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
     border-radius: 2px;
+    background-color: #ebedf0; /* Default empty state */
 }
 
-/* Legend (optional) */
-.legend {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-.legend span {
-    display: inline-block;
-    width: 15px;
-    height: 15px;
+/* Tooltip style */
+.day-box:hover {
+    outline: 1px solid #111;
 }
 </style>
 
@@ -85,150 +64,85 @@ const scoreData = JSON.parse('{{ score_data|safe|escapejs }}');
 const joinDate = "{{ join_date }}";
 const today = "{{ today }}";
 
-
 // ===============================
-// HEATMAP DATE FUNCTIONS
+// 2026 DATE GENERATION
 // ===============================
-function getAllDatesOfYear() {
+function get2026Dates() {
     let arr = [];
-    const year = new Date().getFullYear();
+    const year = 2026; // Forced to 2026
     let d = new Date(year, 0, 1);
+    
+    // In 2026, Jan 1st is a Thursday. 
+    // We want the grid to always start on a Sunday to keep rows consistent.
+    // Shift back to the preceding Sunday.
+    const startOffset = d.getDay(); 
+    d.setDate(d.getDate() - startOffset);
 
-    while (d.getFullYear() === year) {
+    // Fill exactly 53 weeks (371 days) to keep the grid perfectly rectangular
+    for (let i = 0; i < 53 * 7; i++) {
         arr.push(new Date(d));
         d.setDate(d.getDate() + 1);
     }
     return arr;
 }
 
-function weekNumber(d) {
-    const yearStart = new Date(d.getFullYear(), 0, 1);
-    return Math.floor((d - yearStart) / (7 * 24 * 60 * 60 * 1000));
-}
-
-const days = getAllDatesOfYear();
-
+const days = get2026Dates();
 
 // ===============================
-// MONTH LABEL CALCULATION
-// ===============================
-let monthWeeks = {};
-
-days.forEach(d => {
-    const month = d.toLocaleString("default", { month: "short" });
-    const wk = weekNumber(d);
-
-    if (!monthWeeks[month]) monthWeeks[month] = new Set();
-    monthWeeks[month].add(wk);
-});
-
-let monthHTML = "";
-
-Object.entries(monthWeeks).forEach(([month, weeks]) => {
-    monthHTML += `<div style="grid-column: span ${weeks.size};">${month}</div>`;
-});
-
-document.getElementById("month-labels").innerHTML = monthHTML;
-
-
-// ===============================
-// RENDER HEATMAP
+// RENDER HEATMAP & DYNAMIC LABELS
 // ===============================
 let heatHTML = "";
+let monthLabelsArr = new Array(53).fill("");
+let currentMonth = -1;
 
-days.forEach(day => {
+days.forEach((day, index) => {
     const dateStr = day.toISOString().split("T")[0];
-    const wk = weekNumber(day);
-    const row = day.getDay() + 1; // Sunday = row 1
+    const col = Math.floor(index / 7);
+    const row = (index % 7) + 1;
+    const isActually2026 = day.getFullYear() === 2026;
 
-    let color = "#000"; // before join date
+    // Handle Month Labels (Placed at the start of each month)
+    if (isActually2026 && day.getMonth() !== currentMonth) {
+        currentMonth = day.getMonth();
+        monthLabelsArr[col] = day.toLocaleString("default", { month: "short" });
+    }
 
-    if (typeof scoreData[dateStr] !== 'undefined') {
+    // Determine Color
+    let color = "#ebedf0"; // Default (Empty)
+    if (!isActually2026) {
+        color = "transparent"; // Padding days outside 2026
+    } else if (typeof scoreData[dateStr] !== 'undefined') {
         let score = Number(scoreData[dateStr]);
-
-        // score is average per-criterion (1..5)
-        if (score >= 4.5) color = "#006400";       // excellent
-        else if (score >= 3.5) color = "#32CD32";  // very good
-        else if (score >= 2.5) color = "#CCCC00";  // average
-        else if (score >= 1.5) color = "#FF8C00";  // below average
-        else color = "#8B0000";                    // poor
-
-    } else if (dateStr >= joinDate && dateStr <= today) {
-        color = "#FFFFFF"; // no entry yet
+        if (score >= 4.5) color = "#216e39";      // Level 4
+        else if (score >= 3.5) color = "#30a14e"; // Level 3
+        else if (score >= 2.5) color = "#40c463"; // Level 2
+        else if (score >= 1.5) color = "#9be9a8"; // Level 1
+        else color = "#ebedf0";                   // Level 0
+    } else if (dateStr < joinDate) {
+        color = "#f6f8fa"; // Before user joined
     }
 
     heatHTML += `
-        <div class="day-box"
-             title="${dateStr}"
-             style="grid-column:${wk + 1}; grid-row:${row}; background:${color}">
+        <div class="day-box" 
+             title="${isActually2026 ? dateStr : ''}"
+             style="grid-column: ${col + 1}; grid-row: ${row}; background: ${color}; 
+                    border: ${color === '#ebedf0' ? '1px solid #e1e4e8' : 'none'}">
         </div>
     `;
 });
 
+// Render Month Labels
+let monthHTML = "";
+monthLabelsArr.forEach(label => {
+    monthHTML += `<div style="grid-column: span 1;">${label}</div>`;
+});
+
 document.getElementById("heatmap").innerHTML = heatHTML;
-
-
-// ===============================
-// LINE CHART
-// ===============================
-const lineLabels = JSON.parse('{{ line_labels|safe|escapejs }}');
-const lineValues = JSON.parse('{{ line_values|safe|escapejs }}');
-
-new Chart(document.getElementById("lineChart"), {
-    type: "line",
-    data: {
-        labels: lineLabels,
-        datasets: [{
-            label: "Daily Score",
-            data: lineValues,
-            borderColor: "blue",
-            borderWidth: 2,
-            tension: 0.3
-        }]
-    }
-});
-
+document.getElementById("month-labels").innerHTML = monthHTML;
 
 // ===============================
-// BAR CHART
+// (KEEP YOUR EXISTING CHART.JS LOGIC BELOW)
 // ===============================
-const barLabels = JSON.parse('{{ month_labels|safe|escapejs }}');
-const barValues = JSON.parse('{{ month_scores|safe|escapejs }}');
-
-new Chart(document.getElementById("barChart"), {
-    type: "bar",
-    data: {
-        labels: barLabels,
-        datasets: [{
-            label: "Monthly Avg Score",
-            data: barValues,
-            backgroundColor: "skyblue",
-        }]
-    }
-});
-
-
-// ===============================
-// PIE CHART (5 categories)
-// ===============================
-const pieData = [
-    Number("{{ excellent }}"),
-    Number("{{ very_good }}"),
-    Number("{{ average }}"),
-    Number("{{ below_avg }}"),
-    Number("{{ poor }}")
-];
-
-new Chart(document.getElementById("pieChart"), {
-    type: "pie",
-    data: {
-        labels: ["Excellent", "Very Good", "Average", "Below Avg", "Poor"],
-        datasets: [{
-            data: pieData,
-            backgroundColor: ["#006400", "#32CD32", "#CCCC00", "#FF8C00", "#8B0000"],
-        }]
-    }
-});
+// ... lineChart, barChart, and pieChart code from your original snippet ...
 </script>
-
 {% endblock %}

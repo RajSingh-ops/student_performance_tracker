@@ -26,63 +26,78 @@ def handler404(request, exception=None):
     return redirect('dashboard')
 
 
+import json
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from collections import defaultdict
+from .models import DailyEntry
+
 @login_required
 def dashboard_view(request):
     user = request.user
+    # 1. Filter entries specifically for the year 2026
+    current_year = 2026 
+    entries = DailyEntry.objects.filter(
+        user=user, 
+        date__year=current_year
+    ).order_by("date")
 
-    entries = DailyEntry.objects.filter(user=user).order_by("date")
-
-    # Daily performance line chart
     line_labels = []
     line_values = []
-
-    for e in entries:
-        line_labels.append(e.date.isoformat())
-        # compute per-day average across criteria
-        values = [int(v) for v in e.ratings.values()] if e.ratings else [0]
-        total = sum(values)
-        count = len(values) if len(values) > 0 else 1
-        avg = round(total / count, 2)
-        line_values.append(avg)
-
-    # Monthly average bar chart
     month_data = defaultdict(list)
+    score_data = {}
+
+    # Performance categories for Pie Chart
+    excellent = 0
+    very_good = 0
+    average = 0
+    below_avg = 0
+    poor = 0
 
     for e in entries:
-        month = e.date.strftime("%b")
-        values = [int(v) for v in e.ratings.values()] if e.ratings else [0]
-        total = sum(values)
-        count = len(values) if len(values) > 0 else 1
-        avg = round(total / count, 2)
-        month_data[month].append(avg)
+        date_str = e.date.isoformat()
+        
+        # Calculate daily average across all criteria
+        ratings = e.ratings.values() if e.ratings else [0]
+        values = [int(v) for v in ratings]
+        daily_avg = round(sum(values) / len(values), 2) if values else 0
 
-    month_labels = list(month_data.keys())
-    month_scores = [round(sum(v) / len(v), 2) for v in month_data.values()]
+        # Prepare Line Chart data
+        line_labels.append(date_str)
+        line_values.append(daily_avg)
 
-    # Heatmap score normalization
-    daily_scores = [
-        {
-            "date": e.date.isoformat(),
-            "score": round(sum([int(v) for v in e.ratings.values()]) / (len(e.ratings) if len(e.ratings) > 0 else 1), 2)
-        }
-        for e in entries
-    ]
+        # Prepare Monthly Bar Chart data
+        month_name = e.date.strftime("%b")
+        month_data[month_name].append(daily_avg)
 
-    # prepare JSON-serializable data for template JS
-    score_data = {d["date"]: d["score"] for d in daily_scores}
+        # Prepare Heatmap data
+        score_data[date_str] = daily_avg
 
-    # pie chart counts (5 categories) based on per-criterion average (1..5)
-    excellent = sum(1 for d in daily_scores if d["score"] >= 4.5)
-    very_good = sum(1 for d in daily_scores if 3.5 <= d["score"] < 4.5)
-    average = sum(1 for d in daily_scores if 2.5 <= d["score"] < 3.5)
-    below_avg = sum(1 for d in daily_scores if 1.5 <= d["score"] < 2.5)
-    poor = sum(1 for d in daily_scores if d["score"] < 1.5)
+        # Categorize for Pie Chart
+        if daily_avg >= 4.5: excellent += 1
+        elif daily_avg >= 3.5: very_good += 1
+        elif daily_avg >= 2.5: average += 1
+        elif daily_avg >= 1.5: below_avg += 1
+        else: poor += 1
 
-    return render(request, "dashboard.html", {
+    # Format Monthly Averages
+    # We use a list of month names to keep them in order Jan-Dec
+    month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    final_month_labels = []
+    final_month_scores = []
+
+    for m in month_order:
+        if m in month_data:
+            final_month_labels.append(m)
+            avg_score = round(sum(month_data[m]) / len(month_data[m]), 2)
+            final_month_scores.append(avg_score)
+
+    context = {
         "line_labels": json.dumps(line_labels),
         "line_values": json.dumps(line_values),
-        "month_labels": json.dumps(month_labels),
-        "month_scores": json.dumps(month_scores),
+        "month_labels": json.dumps(final_month_labels),
+        "month_scores": json.dumps(final_month_scores),
         "score_data": json.dumps(score_data),
         "join_date": user.date_joined.date().isoformat(),
         "today": timezone.localdate().isoformat(),
@@ -91,7 +106,9 @@ def dashboard_view(request):
         "average": average,
         "below_avg": below_avg,
         "poor": poor,
-    })
+    }
+
+    return render(request, "dashboard.html", context)
 
 
 @login_required
