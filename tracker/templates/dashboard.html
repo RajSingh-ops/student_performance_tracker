@@ -5,7 +5,7 @@
 
 <h2 class="mb-4 text-center">Your 2026 Performance Calendar</h2>
 
-<div class="d-flex justify-content-between align-items-end mb-2 px-1" style="max-width: 900px; margin: 0 auto; font-family: sans-serif;">
+<div class="d-flex justify-content-between align-items-end mb-2 px-1" style="max-width: 950px; margin: 0 auto; font-family: sans-serif;">
     <div style="font-size: 18px; color: #333;">
         <strong id="total-submissions">0</strong> submissions in 2026
     </div>
@@ -32,7 +32,6 @@
 </div>
 
 <style>
-/* ---------- HEATMAP LAYOUT ---------- */
 .heatmap-container {
     overflow-x: auto;
     background: #fff;
@@ -41,7 +40,7 @@
 
 .heatmap-flex {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     justify-content: center;
     align-items: flex-start;
 }
@@ -60,15 +59,16 @@
 
 .month-grid {
     display: grid;
-    grid-template-rows: repeat(7, 10px);
-    grid-auto-columns: 10px;
+    /* 7 rows for days of the week */
+    grid-template-rows: repeat(7, 11px);
+    grid-auto-columns: 11px;
     grid-auto-flow: column;
     gap: 3px;
 }
 
 .day-box {
-    width: 10px;
-    height: 10px;
+    width: 11px;
+    height: 11px;
     border-radius: 2px;
     background-color: #ebedf0; 
     transition: transform 0.1s;
@@ -80,61 +80,74 @@
     outline: 1px solid #333;
 }
 
-/* Color Levels */
+/* Colors */
 .lvl-0 { background-color: #ebedf0; }
 .lvl-1 { background-color: #9be9a8; }
 .lvl-2 { background-color: #40c463; }
 .lvl-3 { background-color: #30a14e; }
 .lvl-4 { background-color: #216e39; }
+
+.empty-cell {
+    width: 11px;
+    height: 11px;
+    background: transparent;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-// 1. DATA PARSING
 const scoreData = JSON.parse('{{ score_data|safe|escapejs }}');
-const joinDate = "{{ join_date }}";
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// 2. RENDER HEATMAP & CALCULATE STATS
 function initDashboard() {
     const container = document.getElementById("heatmap-flex");
     let html = "";
     let totalScore = 0;
     let activeDays = 0;
-    
-    // Simple logic for streak/total (can be refined based on your exact data structure)
-    Object.keys(scoreData).forEach(date => {
-        if(scoreData[date] > 0) activeDays++;
-        totalScore += scoreData[date];
-    });
+
+    // Fixes the "31 Dec" issue by using local date formatting instead of ISO
+    const formatDate = (date) => {
+        const d = new Date(date);
+        let month = '' + (d.getMonth() + 1);
+        let day = '' + d.getDate();
+        let year = d.getFullYear();
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+        return [year, month, day].join('-');
+    };
 
     for (let m = 0; m < 12; m++) {
         let monthHTML = `<div class="month-block">`;
         monthHTML += `<div class="month-grid">`;
 
         let date = new Date(2026, m, 1);
-        let firstDayIndex = date.getDay(); 
-        
-        // Vertical offset for weekday alignment
+        let firstDayIndex = date.getDay(); // 0=Sun, 1=Mon...
+
+        // Add empty cells for the first week to align weekdays
         for(let p = 0; p < firstDayIndex; p++) {
-            monthHTML += `<div style="background:transparent; width:10px; height:10px;"></div>`;
+            monthHTML += `<div class="empty-cell"></div>`;
         }
 
         while (date.getMonth() === m) {
-            const dateStr = date.toISOString().split("T")[0];
+            const dateStr = formatDate(date);
             let colorClass = "lvl-0";
 
             if (scoreData[dateStr] !== undefined) {
                 let score = Number(scoreData[dateStr]);
+                totalScore += score;
+                if(score > 0) activeDays++;
+                
                 if (score >= 4.5) colorClass = "lvl-4";
                 else if (score >= 3.5) colorClass = "lvl-3";
                 else if (score >= 2.5) colorClass = "lvl-2";
                 else if (score >= 1.5) colorClass = "lvl-1";
             }
-            monthHTML += `<div class="day-box ${colorClass}" title="${dateStr}: ${scoreData[dateStr] || 0}"></div>`;
+            
+            monthHTML += `<div class="day-box ${colorClass}" title="${dateStr}"></div>`;
             date.setDate(date.getDate() + 1);
         }
+
         monthHTML += `</div><div class="month-label">${monthNames[m]}</div></div>`;
         html += monthHTML;
     }
@@ -144,33 +157,31 @@ function initDashboard() {
     document.getElementById('total-submissions').innerText = Math.round(totalScore);
 }
 
-// 3. RENDER CHARTS
 function renderCharts() {
-    const labels = Object.keys(scoreData).sort();
-    const values = labels.map(date => scoreData[date]);
+    const sortedDates = Object.keys(scoreData).sort();
+    const values = sortedDates.map(date => scoreData[date]);
 
     // Line Chart
     new Chart(document.getElementById('lineChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: labels,
+            labels: sortedDates,
             datasets: [{
-                label: 'Score',
                 data: values,
                 borderColor: '#30a14e',
-                backgroundColor: 'rgba(48, 161, 78, 0.1)',
+                backgroundColor: 'rgba(48, 161, 78, 0.05)',
                 borderWidth: 2,
                 fill: true,
-                tension: 0.3,
-                pointRadius: 2
+                tension: 0.4,
+                pointRadius: 0
             }]
         },
         options: {
             responsive: true,
             plugins: { legend: { display: false } },
             scales: {
-                y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
-                x: { ticks: { maxTicksLimit: 8 }, grid: { display: false } }
+                y: { beginAtZero: true, grid: { color: '#f5f5f5' } },
+                x: { display: false }
             }
         }
     });
@@ -178,31 +189,26 @@ function renderCharts() {
     // Pie Chart
     const counts = [0, 0, 0, 0, 0]; 
     values.forEach(v => {
-        if (v >= 4) counts[4]++;
-        else if (v >= 3) counts[3]++;
-        else if (v >= 2) counts[2]++;
-        else if (v >= 1) counts[1]++;
+        if (v >= 4.5) counts[4]++;
+        else if (v >= 3.5) counts[3]++;
+        else if (v >= 2.5) counts[2]++;
+        else if (v >= 1.5) counts[1]++;
         else counts[0]++;
     });
 
     new Chart(document.getElementById('pieChart').getContext('2d'), {
         type: 'doughnut',
         data: {
-            labels: ['Lvl 0', 'Lvl 1', 'Lvl 2', 'Lvl 3', 'Lvl 4'],
+            labels: ['Level 0', 'Level 1', 'Level 2', 'Level 3', 'Level 4'],
             datasets: [{
                 data: counts,
-                backgroundColor: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
-                borderWidth: 1
+                backgroundColor: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39']
             }]
         },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'bottom' } }
-        }
+        options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
     });
 }
 
-// Run everything
 initDashboard();
 renderCharts();
 </script>
