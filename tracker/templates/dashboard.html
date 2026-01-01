@@ -5,29 +5,44 @@
 
 <h2 class="mb-4 text-center">Your 2026 Performance Calendar</h2>
 
-<div class="heatmap-container shadow-sm p-4 bg-white rounded">
+<div class="d-flex justify-content-between align-items-end mb-2 px-1" style="max-width: 900px; margin: 0 auto; font-family: sans-serif;">
+    <div style="font-size: 18px; color: #333;">
+        <strong id="total-submissions">0</strong> submissions in 2026
+    </div>
+    <div style="font-size: 14px; color: #8c8c8c;">
+        Total active days: <span style="color: #333;" id="active-days">0</span> 
+        &nbsp;&nbsp; Max streak: <span style="color: #333;" id="max-streak">0</span>
+    </div>
+</div>
+
+<div class="heatmap-container shadow-sm p-4 bg-white rounded mb-5">
     <div id="heatmap-flex" class="heatmap-flex">
         </div>
 </div>
 
-<hr class="my-5">
-
-<h3>Daily Performance Trend</h3>
-<canvas id="lineChart" height="90"></canvas>
+<div class="row">
+    <div class="col-md-8">
+        <h3>Daily Performance Trend</h3>
+        <canvas id="lineChart" height="120"></canvas>
+    </div>
+    <div class="col-md-4">
+        <h3>Score Distribution</h3>
+        <canvas id="pieChart" height="120"></canvas>
+    </div>
+</div>
 
 <style>
-/* ---------- LEETCODE STYLE HEATMAP ---------- */
+/* ---------- HEATMAP LAYOUT ---------- */
 .heatmap-container {
     overflow-x: auto;
     background: #fff;
-    border: 1px solid #f0f0f0;
-    padding-bottom: 20px;
+    border: 1px solid #e1e4e8;
 }
 
 .heatmap-flex {
     display: flex;
-    gap: 12px; /* Gap between month blocks */
-    justify-content: start;
+    gap: 12px;
+    justify-content: center;
     align-items: flex-start;
 }
 
@@ -38,15 +53,13 @@
 }
 
 .month-label {
-    font-size: 12px;
+    font-size: 11px;
     color: #8c8c8c;
     margin-top: 8px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .month-grid {
     display: grid;
-    /* Max 6 weeks in a month block, 7 days down */
     grid-template-rows: repeat(7, 10px);
     grid-auto-columns: 10px;
     grid-auto-flow: column;
@@ -62,12 +75,12 @@
 }
 
 .day-box:hover {
-    transform: scale(1.2);
+    transform: scale(1.3);
     z-index: 10;
     outline: 1px solid #333;
 }
 
-/* Color Scale - Matching the image's vibrant greens */
+/* Color Levels */
 .lvl-0 { background-color: #ebedf0; }
 .lvl-1 { background-color: #9be9a8; }
 .lvl-2 { background-color: #40c463; }
@@ -75,26 +88,35 @@
 .lvl-4 { background-color: #216e39; }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
+// 1. DATA PARSING
 const scoreData = JSON.parse('{{ score_data|safe|escapejs }}');
 const joinDate = "{{ join_date }}";
-
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function renderHeatmap() {
+// 2. RENDER HEATMAP & CALCULATE STATS
+function initDashboard() {
     const container = document.getElementById("heatmap-flex");
     let html = "";
+    let totalScore = 0;
+    let activeDays = 0;
+    
+    // Simple logic for streak/total (can be refined based on your exact data structure)
+    Object.keys(scoreData).forEach(date => {
+        if(scoreData[date] > 0) activeDays++;
+        totalScore += scoreData[date];
+    });
 
     for (let m = 0; m < 12; m++) {
         let monthHTML = `<div class="month-block">`;
         monthHTML += `<div class="month-grid">`;
 
-        // Get all days in this specific month for 2026
         let date = new Date(2026, m, 1);
+        let firstDayIndex = date.getDay(); 
         
-        // To align the grid vertically by day of week (Sun-Sat)
-        // We add empty/transparent placeholders for the first week
-        let firstDayIndex = date.getDay(); // 0 (Sun) to 6 (Sat)
+        // Vertical offset for weekday alignment
         for(let p = 0; p < firstDayIndex; p++) {
             monthHTML += `<div style="background:transparent; width:10px; height:10px;"></div>`;
         }
@@ -109,23 +131,79 @@ function renderHeatmap() {
                 else if (score >= 3.5) colorClass = "lvl-3";
                 else if (score >= 2.5) colorClass = "lvl-2";
                 else if (score >= 1.5) colorClass = "lvl-1";
-            } else if (dateStr < joinDate) {
-                colorClass = "lvl-0"; // or a custom "not joined" color
             }
-
-            monthHTML += `<div class="day-box ${colorClass}" title="${dateStr}"></div>`;
+            monthHTML += `<div class="day-box ${colorClass}" title="${dateStr}: ${scoreData[dateStr] || 0}"></div>`;
             date.setDate(date.getDate() + 1);
         }
-
-        monthHTML += `</div>`; // Close grid
-        monthHTML += `<div class="month-label">${monthNames[m]}</div>`;
-        monthHTML += `</div>`; // Close block
+        monthHTML += `</div><div class="month-label">${monthNames[m]}</div></div>`;
         html += monthHTML;
     }
-
+    
     container.innerHTML = html;
+    document.getElementById('active-days').innerText = activeDays;
+    document.getElementById('total-submissions').innerText = Math.round(totalScore);
 }
 
-renderHeatmap();
+// 3. RENDER CHARTS
+function renderCharts() {
+    const labels = Object.keys(scoreData).sort();
+    const values = labels.map(date => scoreData[date]);
+
+    // Line Chart
+    new Chart(document.getElementById('lineChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Score',
+                data: values,
+                borderColor: '#30a14e',
+                backgroundColor: 'rgba(48, 161, 78, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                x: { ticks: { maxTicksLimit: 8 }, grid: { display: false } }
+            }
+        }
+    });
+
+    // Pie Chart
+    const counts = [0, 0, 0, 0, 0]; 
+    values.forEach(v => {
+        if (v >= 4) counts[4]++;
+        else if (v >= 3) counts[3]++;
+        else if (v >= 2) counts[2]++;
+        else if (v >= 1) counts[1]++;
+        else counts[0]++;
+    });
+
+    new Chart(document.getElementById('pieChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Lvl 0', 'Lvl 1', 'Lvl 2', 'Lvl 3', 'Lvl 4'],
+            datasets: [{
+                data: counts,
+                backgroundColor: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
+
+// Run everything
+initDashboard();
+renderCharts();
 </script>
 {% endblock %}
