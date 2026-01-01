@@ -19,20 +19,12 @@
     </div>
 
     <div class="card p-3 mt-4">
-    <h5>Social Links</h5>
-    <ul>
-        {% if profile.instagram and profile.instagram|startswith:"http" %}
-            <li><a href="{{ profile.instagram }}" target="_blank" rel="noopener">Instagram</a></li>
-        {% endif %}
-        {% if profile.twitter and profile.twitter|startswith:"http" %}
-            <li><a href="{{ profile.twitter }}" target="_blank" rel="noopener">Twitter</a></li>
-        {% endif %}
-        {% if profile.linkedin and profile.linkedin|startswith:"http" %}
-            <li><a href="{{ profile.linkedin }}" target="_blank" rel="noopener">LinkedIn</a></li>
-        {% endif %}
-        {% if profile.github and profile.github|startswith:"http" %}
-            <li><a href="{{ profile.github }}" target="_blank" rel="noopener">GitHub</a></li>
-        {% endif %}
+    <h5>Social</h5>
+    <ul class="list-unstyled mb-0">
+        {% if profile.instagram %}<li><strong>Instagram:</strong> {{ profile.instagram }}</li>{% endif %}
+        {% if profile.twitter %}<li><strong>Twitter:</strong> {{ profile.twitter }}</li>{% endif %}
+        {% if profile.linkedin %}<li><strong>LinkedIn:</strong> {{ profile.linkedin }}</li>{% endif %}
+        {% if profile.github %}<li><strong>GitHub:</strong> {{ profile.github }}</li>{% endif %}
     </ul>
 </div>
 
