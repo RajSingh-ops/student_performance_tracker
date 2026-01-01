@@ -449,3 +449,15 @@ Be positive, practical, and encouraging.
 
     messages.success(request, "Analysis complete!")
     return redirect("daily")
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+
+@login_required
+def delete_account_view(request):
+    if request.method == "POST":
+        user = request.user
+        logout(request)        # logout first
+        user.delete()          # deletes user + cascades profile
+        return redirect("landing")
+
+    return render(request, "delete_account.html")

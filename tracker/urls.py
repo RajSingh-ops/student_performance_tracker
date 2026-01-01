@@ -27,6 +27,7 @@ urlpatterns = [
     #Achievements feed page
     path("achievements/", achievements_page, name="achievements"),
     path("achievements/create/", create_achievement, name="create_achievement"),
+    path("account/delete/", views.delete_account_view, name="delete-account"),
 
     # Like / Unlike (AJAX)
     path("achievements/<int:id>/like/", toggle_like, name="toggle_like"),
