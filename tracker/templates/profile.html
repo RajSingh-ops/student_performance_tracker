@@ -19,14 +19,23 @@
     </div>
 
     <div class="card p-3 mt-4">
-        <h5>Social Links</h5>
-        <ul>
-            {% if profile.instagram %}<li><a href="{{ profile.instagram }}">Instagram</a></li>{% endif %}
-            {% if profile.twitter %}<li><a href="{{ profile.twitter }}">Twitter</a></li>{% endif %}
-            {% if profile.linkedin %}<li><a href="{{ profile.linkedin }}">LinkedIn</a></li>{% endif %}
-            {% if profile.github %}<li><a href="{{ profile.github }}">GitHub</a></li>{% endif %}
-        </ul>
-    </div>
+    <h5>Social Links</h5>
+    <ul>
+        {% if profile.instagram and profile.instagram|startswith:"http" %}
+            <li><a href="{{ profile.instagram }}" target="_blank" rel="noopener">Instagram</a></li>
+        {% endif %}
+        {% if profile.twitter and profile.twitter|startswith:"http" %}
+            <li><a href="{{ profile.twitter }}" target="_blank" rel="noopener">Twitter</a></li>
+        {% endif %}
+        {% if profile.linkedin and profile.linkedin|startswith:"http" %}
+            <li><a href="{{ profile.linkedin }}" target="_blank" rel="noopener">LinkedIn</a></li>
+        {% endif %}
+        {% if profile.github and profile.github|startswith:"http" %}
+            <li><a href="{{ profile.github }}" target="_blank" rel="noopener">GitHub</a></li>
+        {% endif %}
+    </ul>
+</div>
+
 
 </div>
 
