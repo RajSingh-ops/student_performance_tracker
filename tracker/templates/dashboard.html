@@ -128,8 +128,11 @@ function initDashboard() {
                 else if (score >= 2.5) colorClass = "lvl-2";
                 else if (score >= 1.5) colorClass = "lvl-1";
                 
-                chartLabels.push(dateStr);
-                chartValues.push(score);
+                if (dateStr in scoreData) {
+                    chartLabels.push(dateStr);
+                    chartValues.push(scoreData[dateStr]);
+                }
+
             }
 
             monthHTML += `<div class="day-box ${colorClass}" title="${isActualMonth ? dateStr + ': ' + score : ''}"></div>`;
