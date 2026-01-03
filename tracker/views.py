@@ -461,3 +461,20 @@ def delete_account_view(request):
         return redirect("landing")
 
     return render(request, "delete_account.html")
+# views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.models import User
+
+def view_other_profile(request, username):
+    # 1. Find the user being requested
+    other_user = get_object_or_404(User, username=username)
+    
+    # 2. THE SELF CASE:
+    # If the logged-in user clicks on themselves, redirect them to their own dashboard
+    if request.user.is_authenticated and request.user == other_user:
+        return redirect('profile') # 'profile' is your private view name
+    
+    # 3. Otherwise, show them the public template
+    return render(request, 'other_profile_template.html', {
+        'other_user': other_user
+    })

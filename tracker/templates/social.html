@@ -45,8 +45,10 @@
                                             </div>
                                         </div>
                                         <div class="text-end">
-                                            <a href="{% url 'profile' %}" class="btn btn-primary">View Profile</a>
-                                        </div>
+    <a href="{% url 'view_other_profile' user.username %}" class="btn btn-primary">
+        View Profile
+    </a>
+</div>
                                     </div>
                                 </div>
                             </div>

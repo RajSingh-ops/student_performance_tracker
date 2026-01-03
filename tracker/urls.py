@@ -37,5 +37,6 @@ urlpatterns = [
     path("achievements/<int:id>/comment/", add_comment, name="add_comment"),
     path("/aboutwebsite", views.about_page, name="about website"),
     path("", landing_page, name="landing"),
-
+    # urls.py
+    path('viewprofile/<str:username>/', views.view_other_profile, name='view_other_profile'),
 ]
