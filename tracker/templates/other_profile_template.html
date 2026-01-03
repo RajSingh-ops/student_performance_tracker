@@ -48,22 +48,11 @@
                     <div class="d-grid gap-2 d-md-block">
                         {% if request.user == other_user %}
                             <a href="{% url 'profile' %}" class="btn btn-outline-primary px-5">Edit My Profile</a>
-                        {% else %}
-                            <button class="btn btn-primary px-5 rounded-pill">Follow</button>
-                            <a href="mailto:{{ other_user.email }}" class="btn btn-outline-secondary px-5 rounded-pill">Contact</a>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
-            <div class="mt-5">
-                <h4 class="mb-4">Recent Activity</h4>
-                <div class="row">
-                    <div class="col-12 text-center py-5 bg-light rounded">
-                        <p class="text-muted mb-0">No public posts to show yet.</p>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
