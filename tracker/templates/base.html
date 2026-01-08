@@ -48,12 +48,13 @@
     <a class="navbar-brand" href="/">Performance Tracker</a>
 
     <div class="d-flex align-items-center gap-3">
-        <li class="nav-item dropdown px-3">
+        <li class="nav-item dropdown px-3" id="notif-section">
     <a class="nav-link position-relative" href="#" id="notifBell" role="button" data-bs-toggle="dropdown">
-        <i class="fas fa-bell" style="font-size: 1.2rem; color: #2c5364;"></i>
-        <span id="notif-dot" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="display:none;"></span>
+        <i class="fas fa-bell" style="font-size: 1.2rem; color: #fff;"></i>
+        <span id="notif-dot" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="display: none;"></span>
     </a>
-    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" id="notif-list" style="width: 280px; border-radius: 12px;">
+    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" id="notif-list" style="width: 280px; border-radius: 12px;">
+        <li class="dropdown-header border-bottom">Notifications</li>
         </ul>
 </li>
 
@@ -141,59 +142,56 @@ document.querySelectorAll('.dropdown').forEach(function (dd) {
         dropdown.hide();
     });
 });
+
 document.addEventListener('DOMContentLoaded', function() {
-    const notifList = document.getElementById('notif-list');
-    const notifDot = document.getElementById('notif-dot');
+    const list = document.getElementById('notif-list');
+    const dot = document.getElementById('notif-dot');
+    const bell = document.getElementById('notifBell');
 
-    // 1. Get the facts from Django
-    const hasEntry = "{{ state_has_entry }}" === "True";
-    const hasAnalysis = "{{ state_has_analysis }}" === "True";
-    const hasGoals = "{{ state_has_goals }}" === "True";
+    // Get the boolean states from Django
+    const needEntry = "{{ show_entry_msg }}" === "True";
+    const needAnalysis = "{{ show_analysis_msg }}" === "True";
+    const needGoal = "{{ show_goal_msg }}" === "True";
 
-    function buildNotifications() {
-        const now = new Date();
-        const localHour = now.getHours(); 
-        let activeMessages = [];
+    function updateBell() {
+        const hour = new Date().getHours(); // User's local time
+        let activeNotifs = [];
 
-        // Notification A: Daily Entry (Only if 5 PM or later)
-        if (localHour >= 17 && !hasEntry) {
-            activeMessages.push("You haven’t entered today’s daily entry yet.");
+        // Condition A: 5 PM Local + No Entry
+        if (hour >= 17 && needEntry) {
+            activeNotifs.push("You haven’t entered today’s daily entry yet.");
+        }
+        // Condition B: Entry done + No AI
+        if (needAnalysis) {
+            activeNotifs.push("Analyze today’s entry using AI.");
+        }
+        // Condition C: No Goals
+        if (needGoal) {
+            activeNotifs.push("You haven’t decided your goal yet.");
         }
 
-        // Notification B: AI Analysis
-        if (hasEntry && !hasAnalysis) {
-            activeMessages.push("Analyze today’s entry using AI.");
-        }
-
-        // Notification C: Goal Reminder
-        if (!hasGoals) {
-            activeMessages.push("You haven’t decided your goal yet.");
-        }
-
-        // 2. Update the UI with the messages
-        notifList.innerHTML = '<li class="dropdown-header border-bottom">Notifications</li>';
-        
-        if (activeMessages.length > 0) {
-            notifDot.style.display = 'block'; // Show red dot
-            activeMessages.forEach(msg => {
-                notifList.innerHTML += `<li class="p-2 border-bottom small text-dark">${msg}</li>`;
-            });
+        // Build the dropdown HTML
+        const header = '<li class="dropdown-header border-bottom">Notifications</li>';
+        if (activeNotifs.length > 0) {
+            dot.style.display = 'block'; // Show Red Dot
+            const items = activeNotifs.map(msg => `<li class="p-2 border-bottom small text-dark">${msg}</li>`).join('');
+            list.innerHTML = header + items;
         } else {
-            notifDot.style.display = 'none'; // Hide red dot
-            notifList.innerHTML += '<li class="p-3 text-center text-muted small">No pending tasks</li>';
+            dot.style.display = 'none';
+            list.innerHTML = header + '<li class="p-3 text-center text-muted small">No pending tasks</li>';
         }
     }
 
-    buildNotifications();
-    
-    // Check every minute so it pops up exactly at 5:00 PM without refresh
-    setInterval(buildNotifications, 60000);
+    // Initialize and set interval for 5 PM real-time check
+    updateBell();
+    setInterval(updateBell, 30000); 
 
-    // Remove red dot on click
-    document.getElementById('notifBell').addEventListener('click', () => {
-        notifDot.style.display = 'none';
+    // Remove red dot when clicking the bell
+    bell.addEventListener('click', () => {
+        dot.style.display = 'none';
     });
 });
+
 </script>
 
 

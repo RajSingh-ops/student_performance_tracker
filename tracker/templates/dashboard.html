@@ -6,9 +6,7 @@
 <h2 class="mb-4 text-center">Your 2026 Performance Calendar</h2>
 
 <div class="d-flex justify-content-between align-items-end mb-2 px-1" style="max-width: 950px; margin: 0 auto; font-family: sans-serif;">
-    <div style="font-size: 18px; color: #333;">
-        <strong id="total-submissions">0</strong> submissions in 2026
-    </div>
+
     <div style="font-size: 14px; color: #8c8c8c;">
         Total active days: <span style="color: #333;" id="active-days">0</span> 
         &nbsp;&nbsp; Max streak: <span style="color: #333;" id="max-streak">0</span>
@@ -147,7 +145,6 @@ function initDashboard() {
 
     // Update Header UI
     document.getElementById('active-days').innerText = activeDays;
-    document.getElementById('total-submissions').innerText = Math.round(totalScore);
     document.getElementById('max-streak').innerText = maxStreak;
 
     renderLineChart(chartLabels, chartValues);
