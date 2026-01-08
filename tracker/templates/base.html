@@ -48,6 +48,14 @@
     <a class="navbar-brand" href="/">Performance Tracker</a>
 
     <div class="d-flex align-items-center gap-3">
+        <li class="nav-item dropdown px-3">
+    <a class="nav-link position-relative" href="#" id="notifBell" role="button" data-bs-toggle="dropdown">
+        <i class="fas fa-bell" style="font-size: 1.2rem; color: #2c5364;"></i>
+        <span id="notif-dot" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="display:none;"></span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" id="notif-list" style="width: 280px; border-radius: 12px;">
+        </ul>
+</li>
 
         <!-- Daily Button -->
         <a href="{% url 'daily' %}" class="btn btn-success btn-sm">Daily</a>
@@ -131,6 +139,59 @@ document.querySelectorAll('.dropdown').forEach(function (dd) {
     dd.addEventListener('mouseleave', function () {
         let dropdown = bootstrap.Dropdown.getOrCreateInstance(dd.querySelector('[data-bs-toggle="dropdown"]'));
         dropdown.hide();
+    });
+});
+document.addEventListener('DOMContentLoaded', function() {
+    const notifList = document.getElementById('notif-list');
+    const notifDot = document.getElementById('notif-dot');
+
+    // 1. Get the facts from Django
+    const hasEntry = "{{ state_has_entry }}" === "True";
+    const hasAnalysis = "{{ state_has_analysis }}" === "True";
+    const hasGoals = "{{ state_has_goals }}" === "True";
+
+    function buildNotifications() {
+        const now = new Date();
+        const localHour = now.getHours(); 
+        let activeMessages = [];
+
+        // Notification A: Daily Entry (Only if 5 PM or later)
+        if (localHour >= 17 && !hasEntry) {
+            activeMessages.push("You haven’t entered today’s daily entry yet.");
+        }
+
+        // Notification B: AI Analysis
+        if (hasEntry && !hasAnalysis) {
+            activeMessages.push("Analyze today’s entry using AI.");
+        }
+
+        // Notification C: Goal Reminder
+        if (!hasGoals) {
+            activeMessages.push("You haven’t decided your goal yet.");
+        }
+
+        // 2. Update the UI with the messages
+        notifList.innerHTML = '<li class="dropdown-header border-bottom">Notifications</li>';
+        
+        if (activeMessages.length > 0) {
+            notifDot.style.display = 'block'; // Show red dot
+            activeMessages.forEach(msg => {
+                notifList.innerHTML += `<li class="p-2 border-bottom small text-dark">${msg}</li>`;
+            });
+        } else {
+            notifDot.style.display = 'none'; // Hide red dot
+            notifList.innerHTML += '<li class="p-3 text-center text-muted small">No pending tasks</li>';
+        }
+    }
+
+    buildNotifications();
+    
+    // Check every minute so it pops up exactly at 5:00 PM without refresh
+    setInterval(buildNotifications, 60000);
+
+    // Remove red dot on click
+    document.getElementById('notifBell').addEventListener('click', () => {
+        notifDot.style.display = 'none';
     });
 });
 </script>
