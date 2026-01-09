@@ -424,7 +424,7 @@ Overall reflection:
 {reflection}
 
 Task:
-Give short advice and motivation in under 1000 characters.
+Give short advice and motivation in about 10000 characters.
 Be positive, practical, and encouraging.
 """
 
