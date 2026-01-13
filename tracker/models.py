@@ -142,3 +142,24 @@ class AchievementComment(models.Model):
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     text = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
+class Help(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    comment=models.CharField()
+    image=CloudinaryField(
+        "help_image",
+        blank=True,
+        null=True,
+    )
+    created_at=models.DateTimeField(auto_now_add=True)
+class Help_like(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    help=models.ForeignKey(Help,on_delete=models.CASCADE)
+    created_at=models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together=('user','help')
+class Help_comment(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    help=models.ForeignKey(Help,on_delete=models.CASCADE)
+    text=models.TextField(max_length=500)
+    created_at=models.DateTimeField(auto_now_add=True)
