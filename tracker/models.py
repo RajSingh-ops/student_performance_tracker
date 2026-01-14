@@ -144,7 +144,7 @@ class AchievementComment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 class Help(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
-    comment=models.CharField()
+    comment=models.CharField(max_length=300)
     image=CloudinaryField(
         "help_image",
         blank=True,

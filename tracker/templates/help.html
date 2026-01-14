@@ -4,6 +4,7 @@
 {% block content %}
 
 <h1>Help</h1>
+
 {% if user.is_authenticated %}
 <button onclick="toggleAddForm()" style="margin-bottom:15px;">
     ➕ Add Help
@@ -13,9 +14,7 @@
     <form method="POST" action="{% url 'create_help' %}" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <input type="text" name="title" placeholder="Achievement title" required><br><br>
-
-        <textarea name="description" placeholder="Description (optional)"></textarea><br><br>
+        <textarea name="comment" placeholder="Describe your problem..." required></textarea><br><br>
 
         <input type="file" name="image" accept="image/*"><br><br>
 
@@ -28,34 +27,33 @@
 <!-- Hidden CSRF token for JavaScript -->
 <form style="display:none;">{% csrf_token %}</form>
 
-{% for a in achievements %}
+{% for h in help %}
 <div class="card mb-3">
     <div class="card-body">
 
-        <strong>{{ a.user.username }}</strong>
-        <small class="text-muted">{{ a.created_at }}</small>
+        <strong>{{ h.user.username }}</strong>
+        <small class="text-muted">{{ h.created_at }}</small>
 
-        <h5>{{ a.title }}</h5>
-        <p>{{ a.description }}</p>
+        <p>{{ h.comment }}</p>
 
-        {% if a.image %}
-            <img src="{{ a.image.url }}" class="img-fluid rounded mb-2" style="height: 200px;">
+        {% if h.image %}
+            <img src="{{ h.image.url }}" class="img-fluid rounded mb-2" style="height: 200px;">
         {% endif %}
 
         <!-- BUTTONS -->
         <div class="mt-2">
-            <button class="like-btn" data-id="{{ a.id }}">
-                ❤️ <span id="likes-{{ a.id }}">{{ a.achievementlike_set.count }}</span>
+            <button class="like-btn" data-id="{{ h.id }}">
+                ❤️ <span id="likes-{{ h.id }}">{{ h.help_like_set.count }}</span>
             </button>
 
-            <button class="comment-btn" data-id="{{ a.id }}">
-                💬 {{ a.achievementcomment_set.count }}
+            <button class="comment-btn" data-id="{{ h.id }}">
+                💬 {{ h.help_comment_set.count }}
             </button>
         </div>
 
         <!-- COMMENTS -->
-        <div id="comments-{{ a.id }}" style="display:none; margin-top:10px;">
-            {% for c in a.achievementcomment_set.all %}
+        <div id="comments-{{ h.id }}" style="display:none; margin-top:10px;">
+            {% for c in h.help_comment_set.all %}
                 <p>
                     <b>{{ c.user.username }}</b>:
                     {{ c.text|escape }}
@@ -63,7 +61,7 @@
             {% endfor %}
 
             {% if user.is_authenticated %}
-            <form method="POST" action="{% url 'add_comment' a.id %}">
+            <form method="POST" action="{% url 'add_help_comment' h.id %}">
                 {% csrf_token %}
                 <input type="text" name="comment" placeholder="Write reply..." required>
                 <button type="submit">Reply</button>
@@ -74,10 +72,9 @@
     </div>
 </div>
 {% empty %}
-<p>No achievements yet.</p>
+<p>No help posts yet.</p>
 {% endfor %}
 
-<!-- JAVASCRIPT -->
 <script>
 function getCSRFToken() {
     return document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -85,7 +82,7 @@ function getCSRFToken() {
 
 /* ADD FORM TOGGLE */
 function toggleAddForm() {
-    var form = document.getElementById("add-achievement-form");
+    var form = document.getElementById("add-help-form");
     if (form.style.display === "none") {
         form.style.display = "block";
     } else {
@@ -98,7 +95,7 @@ document.querySelectorAll(".like-btn").forEach(function(btn) {
     btn.onclick = function() {
         var id = btn.dataset.id;
 
-        fetch("/achievements/" + id + "/like/", {
+        fetch("/help/" + id + "/like/", {
             method: "POST",
             headers: {
                 "X-CSRFToken": getCSRFToken()

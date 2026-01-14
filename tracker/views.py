@@ -478,6 +478,7 @@ def view_other_profile(request, username):
     return render(request, 'other_profile_template.html', {
         'other_user': other_user
     })
+from .models import Help
 @login_required
 def help(request):
     help=Help.objects.all().order_by("-created_at")
