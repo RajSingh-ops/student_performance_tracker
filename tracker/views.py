@@ -1,7 +1,7 @@
 from collections import defaultdict
 import random
 import json
-from .models import Achievement
+from .models import Achievement, Help_comment, Help_like
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -480,6 +480,47 @@ def view_other_profile(request, username):
     })
 from .models import Help
 @login_required
-def help(request):
-    help=Help.objects.all().order_by("-created_at")
-    return render(request,"help.html",{"help":help})
+def help_page(request):
+    helps = Help.objects.all().order_by("-created_at")
+    return render(request, "help.html", {"helps": helps})
+@login_required
+def create_help(request):
+    if request.method == "POST":
+        comment = request.POST.get("comment")
+        image = request.FILES.get("image")
+
+        Help.objects.create(
+            user=request.user,
+            comment=comment,
+            image=image
+        )
+
+    return redirect("help")
+@login_required
+def like_help(request, id):
+    help_obj = get_object_or_404(Help, id=id)
+
+    like, created = Help_like.objects.get_or_create(
+        user=request.user,
+        help=help_obj
+    )
+
+    if not created:
+        like.delete()
+
+    return JsonResponse({
+        "likes": help_obj.help_like_set.count()
+    })
+@login_required
+def add_help_comment(request, id):
+    help_obj = get_object_or_404(Help, id=id)
+
+    if request.method == "POST":
+        text = request.POST.get("comment")
+        Help_comment.objects.create(
+            user=request.user,
+            help=help_obj,
+            text=text
+        )
+
+    return redirect("help")

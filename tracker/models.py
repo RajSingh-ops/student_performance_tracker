@@ -143,23 +143,42 @@ class AchievementComment(models.Model):
     text = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
 class Help(models.Model):
-    user=models.ForeignKey(User,on_delete=models.CASCADE)
-    comment=models.CharField(max_length=300)
-    image=CloudinaryField(
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.CharField(max_length=300)
+    image = CloudinaryField(
         "help_image",
         blank=True,
         null=True,
     )
-    created_at=models.DateTimeField(auto_now_add=True)
-class Help_like(models.Model):
-    user=models.ForeignKey(User,on_delete=models.CASCADE)
-    help=models.ForeignKey(Help,on_delete=models.CASCADE)
-    created_at=models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together=('user','help')
+        ordering = ["-created_at"]
+
+
+class Help_like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    help = models.ForeignKey(
+        Help,
+        on_delete=models.CASCADE,
+        related_name="likes"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'help')
+
+
 class Help_comment(models.Model):
-    user=models.ForeignKey(User,on_delete=models.CASCADE)
-    help=models.ForeignKey(Help,on_delete=models.CASCADE)
-    text=models.TextField(max_length=500)
-    created_at=models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    help = models.ForeignKey(
+        Help,
+        on_delete=models.CASCADE,
+        related_name="comments"
+    )
+    text = models.TextField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
