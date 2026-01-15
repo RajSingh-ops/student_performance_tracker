@@ -509,8 +509,9 @@ def like_help(request, id):
         like.delete()
 
     return JsonResponse({
-        "likes": help_obj.help_like_set.count()
+        "likes": help_obj.likes.count()
     })
+
 @login_required
 def add_help_comment(request, id):
     help_obj = get_object_or_404(Help, id=id)

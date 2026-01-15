@@ -43,21 +43,23 @@
         <!-- BUTTONS -->
         <div class="mt-2">
             <button class="like-btn" data-id="{{ h.id }}">
-                ❤️ <span id="likes-{{ h.id }}">{{ h.help_like_set.count }}</span>
+                ❤️ <span id="likes-{{ h.id }}">{{ h.likes.count }}</span>
             </button>
 
             <button class="comment-btn" data-id="{{ h.id }}">
-                💬 {{ h.help_comment_set.count }}
+                💬 {{ h.comments.count }}
             </button>
         </div>
 
         <!-- COMMENTS -->
         <div id="comments-{{ h.id }}" style="display:none; margin-top:10px;">
-            {% for c in h.help_comment_set.all %}
+            {% for c in h.comments.all %}
                 <p>
                     <b>{{ c.user.username }}</b>:
                     {{ c.text|escape }}
                 </p>
+            {% empty %}
+                <p class="text-muted">No replies yet.</p>
             {% endfor %}
 
             {% if user.is_authenticated %}
