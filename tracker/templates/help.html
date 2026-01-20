@@ -32,19 +32,32 @@
     <div class="card-body">
 
         <!-- POST HEADER -->
-        <div style="display:flex; gap:8px; align-items:center;">
-            {% if h.user.profile and h.user.profile.profile_image %}
-                <img src="{{ h.user.profile.profile_image.url }}"
-                     alt="{{ h.user.username }}"
-                     style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
-            {% else %}
-                <div style="width:32px; height:32px; border-radius:50%; background:#ccc;"></div>
-            {% endif %}
-            <div>
-                <strong>{{ h.user.username }}</strong><br>
-                <small class="text-muted">{{ h.created_at }}</small>
-            </div>
+        <div style="display:flex; gap:8px; align-items:center; justify-content:space-between;">
+    <div style="display:flex; gap:8px; align-items:center;">
+        {% if h.user.profile and h.user.profile.profile_image %}
+            <img src="{{ h.user.profile.profile_image.url }}"
+                 alt="{{ h.user.username }}"
+                 style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+        {% else %}
+            <div style="width:32px; height:32px; border-radius:50%; background:#ccc;"></div>
+        {% endif %}
+        <div>
+            <strong>{{ h.user.username }}</strong><br>
+            <small class="text-muted">{{ h.created_at }}</small>
         </div>
+    </div>
+
+    {% if user == h.user %}
+    <form method="POST" action="{% url 'delete_help' h.id %}" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit"
+                style="border:none; background:none; color:#d33; cursor:pointer;">
+            🗑
+        </button>
+    </form>
+    {% endif %}
+</div>
+
 
         <p style="margin-top:10px;">{{ h.comment }}</p>
 

@@ -583,3 +583,19 @@ with open("tracker/help.pkl", "rb") as f:
 def classify(text):
     vec = vectorizer.transform([text])
     return model.predict(vec)[0]
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
+from .models import Help
+
+@login_required
+def delete_help(request, id):
+    help_obj = get_object_or_404(Help, id=id)
+
+    # Only the owner can delete
+    if help_obj.user != request.user:
+        return redirect("help")
+
+    if request.method == "POST":
+        help_obj.delete()
+
+    return redirect("help")

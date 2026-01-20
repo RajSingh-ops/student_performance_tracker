@@ -35,6 +35,7 @@ urlpatterns = [
     # Like / Unlike (AJAX)
     path("achievements/<int:id>/like/", toggle_like, name="toggle_like"),
     path("daily/analyze/", views.analyze_entry, name="analyze-entry"),
+    path("help/<int:id>/delete/", views.delete_help, name="delete_help"),
 
     # Add comment
     path("achievements/<int:id>/comment/", add_comment, name="add_comment"),
