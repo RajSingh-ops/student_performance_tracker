@@ -54,13 +54,20 @@
         <!-- COMMENTS -->
         <div id="comments-{{ h.id }}" style="display:none; margin-top:10px;">
             {% for c in h.comments.all %}
-                <p>
-                    <b>{{ c.user.username }}</b>:
-                    {{ c.text|escape }}
-                </p>
-            {% empty %}
-                <p class="text-muted">No replies yet.</p>
-            {% endfor %}
+    <p>
+        <b>
+            {% if c.user %}
+                {{ c.user.username }}
+            {% else %}
+                HelpBot
+            {% endif %}
+        </b>:
+        {{ c.text|escape }}
+    </p>
+{% empty %}
+    <p class="text-muted">No replies yet.</p>
+{% endfor %}
+
 
             {% if user.is_authenticated %}
             <form method="POST" action="{% url 'add_help_comment' h.id %}">

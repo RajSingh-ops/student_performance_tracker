@@ -483,17 +483,66 @@ from .models import Help
 def help_page(request):
     helps = Help.objects.all().order_by("-created_at")
     return render(request, "help.html", {"helps": helps})
+BOT_MESSAGES = {
+    "suicidal": (
+        "I’m really sorry you’re feeling this way. You’re not weak for feeling this pain, "
+        "and you don’t have to face it alone.\n\n"
+        "What you’re going through matters. Even if it feels impossible right now, help does exist.\n\n"
+        "Please consider talking to someone who can support you right now:\n\n"
+        "In India: AASRA Helpline – +91-9820466726 (24/7)\n"
+        "Or visit: https://www.aasra.info\n\n"
+        "If you’re in immediate danger, please contact your local emergency number right now.\n"
+        "You deserve care, and your life has value."
+    ),
+
+    "suffering": (
+        "It sounds like you’re carrying a lot right now. What you’re feeling is real, and it matters.\n\n"
+        "You don’t have to go through this by yourself. Even small steps—like talking to someone you trust—"
+        "can make a difference.\n\n"
+        "You deserve understanding, patience, and care."
+    ),
+
+    "need_help": (
+        "I’m really glad you reached out. Asking for help takes courage.\n\n"
+        "Someone here will respond soon, and you’re not alone in this. "
+        "Your feelings matter, and support is available."
+    ),
+
+    "ok": (
+        "Thanks for sharing. If you need guidance, the community is here to help you."
+    ),
+
+    "not_help": (
+        "Thanks for posting!"
+    )
+}
+
 @login_required
 def create_help(request):
     if request.method == "POST":
-        comment = request.POST.get("comment")
+        comment = request.POST.get("comment", "")
         image = request.FILES.get("image")
 
-        Help.objects.create(
+        category = classify(comment)
+
+        help_obj = Help.objects.create(
             user=request.user,
             comment=comment,
-            image=image
+            image=image,
+            category=category  # store it if you want
         )
+
+        # Auto-reply with classification (for testing)
+        bot_text = BOT_MESSAGES.get(category, "We’re here with you.")
+
+        Help_comment.objects.create(
+            user=None,   # Bot
+            help=help_obj,
+            text=bot_text
+        )
+
+    return redirect("help")
+
 
     return redirect("help")
 @login_required
@@ -525,3 +574,11 @@ def add_help_comment(request, id):
         )
 
     return redirect("help")
+import pickle
+
+with open("tracker/help.pkl", "rb") as f:
+    vectorizer, model = pickle.load(f)
+
+def classify(text):
+    vec = vectorizer.transform([text])
+    return model.predict(vec)[0]
