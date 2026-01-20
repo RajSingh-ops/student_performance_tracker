@@ -489,7 +489,7 @@ BOT_MESSAGES = {
         "and you don’t have to face it alone.\n\n"
         "What you’re going through matters. Even if it feels impossible right now, help does exist.\n\n"
         "Please consider talking to someone who can support you right now:\n\n"
-        "In India: AASRA Helpline – +91-9820466726 (24/7)\n"
+        "AASRA Helpline – +91-9820466726 (24/7)\n"
         "Or visit: https://www.aasra.info\n\n"
         "If you’re in immediate danger, please contact your local emergency number right now.\n"
         "You deserve care, and your life has value."
@@ -504,18 +504,19 @@ BOT_MESSAGES = {
 
     "need_help": (
         "I’m really glad you reached out. Asking for help takes courage.\n\n"
-        "Someone here will respond soon, and you’re not alone in this. "
-        "Your feelings matter, and support is available."
+        "Someone here will respond soon. You’re not alone in this—your feelings matter, and support is available."
     ),
 
     "ok": (
-        "Thanks for sharing. If you need guidance, the community is here to help you."
+        "Thanks for sharing. If you ever need guidance or support, the community is here for you."
     ),
 
     "not_help": (
-        "Thanks for posting!"
+        "Thanks for posting! This section is mainly for people who are asking for help or support. "
+        "If you don’t need help right now, you might enjoy sharing in another part of the app instead."
     )
 }
+
 
 @login_required
 def create_help(request):

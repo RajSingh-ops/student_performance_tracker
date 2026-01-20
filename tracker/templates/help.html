@@ -7,7 +7,7 @@
 
 {% if user.is_authenticated %}
 <button onclick="toggleAddForm()" style="margin-bottom:15px;">
-    ➕ Add Help
+    Ask for help
 </button>
 
 <div id="add-help-form" style="display:none; margin-bottom:20px;">
@@ -31,10 +31,22 @@
 <div class="card mb-3">
     <div class="card-body">
 
-        <strong>{{ h.user.username }}</strong>
-        <small class="text-muted">{{ h.created_at }}</small>
+        <!-- POST HEADER -->
+        <div style="display:flex; gap:8px; align-items:center;">
+            {% if h.user.profile and h.user.profile.profile_image %}
+                <img src="{{ h.user.profile.profile_image.url }}"
+                     alt="{{ h.user.username }}"
+                     style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+            {% else %}
+                <div style="width:32px; height:32px; border-radius:50%; background:#ccc;"></div>
+            {% endif %}
+            <div>
+                <strong>{{ h.user.username }}</strong><br>
+                <small class="text-muted">{{ h.created_at }}</small>
+            </div>
+        </div>
 
-        <p>{{ h.comment }}</p>
+        <p style="margin-top:10px;">{{ h.comment }}</p>
 
         {% if h.image %}
             <img src="{{ h.image.url }}" class="img-fluid rounded mb-2" style="height: 200px;">
@@ -54,20 +66,35 @@
         <!-- COMMENTS -->
         <div id="comments-{{ h.id }}" style="display:none; margin-top:10px;">
             {% for c in h.comments.all %}
-    <p>
-        <b>
-            {% if c.user %}
-                {{ c.user.username }}
-            {% else %}
-                HelpBot
-            {% endif %}
-        </b>:
-        {{ c.text|escape }}
-    </p>
-{% empty %}
-    <p class="text-muted">No replies yet.</p>
-{% endfor %}
+                <div class="comment" style="margin-bottom:12px;">
+                    <div style="display:flex; gap:8px; align-items:flex-start;">
 
+                        {% if c.user %}
+                            {% if c.user.profile and c.user.profile.profile_image %}
+                                <img src="{{ c.user.profile.profile_image.url }}"
+                                     alt="{{ c.user.username }}"
+                                     style="width:28px; height:28px; border-radius:50%; object-fit:cover;">
+                            {% else %}
+                                <div style="width:28px; height:28px; border-radius:50%; background:#ccc;"></div>
+                            {% endif %}
+                            <b>{{ c.user.username }}</b>
+
+                        {% else %}
+                            <!-- HelpBot -->
+                            <img src="https://res.cloudinary.com/doobd64zf/image/upload/v1768914573/Gemini_Generated_Image_47b98347b98347b9_vjqqx3.png"
+                                 alt="HelpBot"
+                                 style="width:28px; height:28px; border-radius:50%;">
+                            <b>HelpBot</b>
+                        {% endif %}
+                    </div>
+
+                    <div style="margin-left:36px;">
+                        {{ c.text|linebreaksbr }}
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">No replies yet.</p>
+            {% endfor %}
 
             {% if user.is_authenticated %}
             <form method="POST" action="{% url 'add_help_comment' h.id %}">
@@ -89,17 +116,11 @@ function getCSRFToken() {
     return document.querySelector('[name=csrfmiddlewaretoken]').value;
 }
 
-/* ADD FORM TOGGLE */
 function toggleAddForm() {
     var form = document.getElementById("add-help-form");
-    if (form.style.display === "none") {
-        form.style.display = "block";
-    } else {
-        form.style.display = "none";
-    }
+    form.style.display = (form.style.display === "none") ? "block" : "none";
 }
 
-/* LIKE BUTTON */
 document.querySelectorAll(".like-btn").forEach(function(btn) {
     btn.onclick = function() {
         var id = btn.dataset.id;
@@ -110,26 +131,18 @@ document.querySelectorAll(".like-btn").forEach(function(btn) {
                 "X-CSRFToken": getCSRFToken()
             }
         })
-        .then(function(res) {
-            return res.json();
-        })
-        .then(function(data) {
+        .then(res => res.json())
+        .then(data => {
             document.getElementById("likes-" + id).innerText = data.likes;
         });
     };
 });
 
-/* COMMENT TOGGLE */
 document.querySelectorAll(".comment-btn").forEach(function(btn) {
     btn.onclick = function() {
         var id = btn.dataset.id;
         var box = document.getElementById("comments-" + id);
-
-        if (box.style.display === "none") {
-            box.style.display = "block";
-        } else {
-            box.style.display = "none";
-        }
+        box.style.display = (box.style.display === "none") ? "block" : "none";
     };
 });
 </script>

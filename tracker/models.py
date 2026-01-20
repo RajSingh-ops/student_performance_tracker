@@ -145,6 +145,7 @@ class AchievementComment(models.Model):
 class Help(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.CharField(max_length=300)
+    category = models.CharField(max_length=100, default="ok")
     image = CloudinaryField(
         "help_image",
         blank=True,
@@ -154,6 +155,7 @@ class Help(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
 
 
 class Help_like(models.Model):
@@ -170,7 +172,12 @@ class Help_like(models.Model):
 
 
 class Help_comment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
     help = models.ForeignKey(
         Help,
         on_delete=models.CASCADE,
@@ -181,4 +188,5 @@ class Help_comment(models.Model):
 
     class Meta:
         ordering = ["created_at"]
+
 

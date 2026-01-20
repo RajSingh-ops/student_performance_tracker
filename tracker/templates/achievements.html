@@ -33,10 +33,22 @@
 <div class="card mb-3">
     <div class="card-body">
 
-        <strong>{{ a.user.username }}</strong>
-        <small class="text-muted">{{ a.created_at }}</small>
+        <!-- POST HEADER -->
+        <div style="display:flex; gap:8px; align-items:center;">
+            {% if a.user.profile and a.user.profile.profile_image %}
+                <img src="{{ a.user.profile.profile_image.url }}"
+                     alt="{{ a.user.username }}"
+                     style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+            {% else %}
+                <div style="width:32px; height:32px; border-radius:50%; background:#ccc;"></div>
+            {% endif %}
+            <div>
+                <strong>{{ a.user.username }}</strong><br>
+                <small class="text-muted">{{ a.created_at }}</small>
+            </div>
+        </div>
 
-        <h5>{{ a.title }}</h5>
+        <h5 style="margin-top:10px;">{{ a.title }}</h5>
         <p>{{ a.description }}</p>
 
         {% if a.image %}
@@ -57,10 +69,24 @@
         <!-- COMMENTS -->
         <div id="comments-{{ a.id }}" style="display:none; margin-top:10px;">
             {% for c in a.achievementcomment_set.all %}
-                <p>
-                    <b>{{ c.user.username }}</b>:
-                    {{ c.text|escape }}
-                </p>
+                <div class="comment" style="margin-bottom:12px;">
+                    <div style="display:flex; gap:8px; align-items:flex-start;">
+                        {% if c.user.profile and c.user.profile.profile_image %}
+                            <img src="{{ c.user.profile.profile_image.url }}"
+                                 alt="{{ c.user.username }}"
+                                 style="width:28px; height:28px; border-radius:50%; object-fit:cover;">
+                        {% else %}
+                            <div style="width:28px; height:28px; border-radius:50%; background:#ccc;"></div>
+                        {% endif %}
+                        <b>{{ c.user.username }}</b>
+                    </div>
+
+                    <div style="margin-left:36px;">
+                        {{ c.text|linebreaksbr }}
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">No replies yet.</p>
             {% endfor %}
 
             {% if user.is_authenticated %}
@@ -78,23 +104,16 @@
 <p>No achievements yet.</p>
 {% endfor %}
 
-<!-- JAVASCRIPT -->
 <script>
 function getCSRFToken() {
     return document.querySelector('[name=csrfmiddlewaretoken]').value;
 }
 
-/* ADD FORM TOGGLE */
 function toggleAddForm() {
     var form = document.getElementById("add-achievement-form");
-    if (form.style.display === "none") {
-        form.style.display = "block";
-    } else {
-        form.style.display = "none";
-    }
+    form.style.display = (form.style.display === "none") ? "block" : "none";
 }
 
-/* LIKE BUTTON */
 document.querySelectorAll(".like-btn").forEach(function(btn) {
     btn.onclick = function() {
         var id = btn.dataset.id;
@@ -105,26 +124,18 @@ document.querySelectorAll(".like-btn").forEach(function(btn) {
                 "X-CSRFToken": getCSRFToken()
             }
         })
-        .then(function(res) {
-            return res.json();
-        })
-        .then(function(data) {
+        .then(res => res.json())
+        .then(data => {
             document.getElementById("likes-" + id).innerText = data.likes;
         });
     };
 });
 
-/* COMMENT TOGGLE */
 document.querySelectorAll(".comment-btn").forEach(function(btn) {
     btn.onclick = function() {
         var id = btn.dataset.id;
         var box = document.getElementById("comments-" + id);
-
-        if (box.style.display === "none") {
-            box.style.display = "block";
-        } else {
-            box.style.display = "none";
-        }
+        box.style.display = (box.style.display === "none") ? "block" : "none";
     };
 });
 </script>
