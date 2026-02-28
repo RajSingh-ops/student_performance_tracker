@@ -1,30 +1,37 @@
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+import cloudinary
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# =========================
-# SECURITY
-# =========================
+try:
+    load_dotenv(str(BASE_DIR / ".env"))
+except:
+    pass
+
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME", "demo"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY", ""),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET", ""),
+)
+
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
     "django-insecure-dev-only"
 )
 
-# DEBUG = os.environ.get("DEBUG", "False") == "True"
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
-    "localhost,127.0.0.1,build2026.onrender.com"
+    "localhost,127.0.0.1,build2026.onrender.com,testserver,dishes-bone-triumph-agreements.trycloudflare.com"
 ).split(",")
 
 CSRF_TRUSTED_ORIGINS = [
     "https://build2026.onrender.com",
+    "https://dishes-bone-triumph-agreements.trycloudflare.com",
 ]
 
-# =========================
-# APPLICATIONS
-# =========================
 INSTALLED_APPS = [
     "tracker.apps.TrackerConfig",
     "django.contrib.admin",
@@ -38,9 +45,6 @@ INSTALLED_APPS = [
     "cloudinary_storage",
 ]
 
-# =========================
-# MIDDLEWARE
-# =========================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -53,9 +57,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "yearscore.urls"
 
-# =========================
-# TEMPLATES
-# =========================
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -74,9 +75,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "yearscore.wsgi.application"
 
-# =========================
-# DATABASE
-# =========================
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -91,9 +89,6 @@ if os.environ.get("DATABASE_URL"):
         conn_max_age=600
     )
 
-# =========================
-# PASSWORD VALIDATION
-# =========================
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -101,38 +96,34 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# =========================
-# INTERNATIONALIZATION
-# =========================
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
 
-# =========================
-# STATIC FILES
-# =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 
+CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "demo")  # Fallback to "demo" for local dev
+CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
+
 CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME"),
-    "API_KEY": os.environ.get("CLOUDINARY_API_KEY"),
-    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET"),
+    "CLOUD_NAME": CLOUDINARY_CLOUD_NAME,
+    "API_KEY": CLOUDINARY_API_KEY,
+    "API_SECRET": CLOUDINARY_API_SECRET,
 }
 
-# =========================
-# AUTH REDIRECTS
-# =========================
+if CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+else:
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
 LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-
-
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")

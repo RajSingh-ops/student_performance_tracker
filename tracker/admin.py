@@ -1,7 +1,6 @@
 from django.contrib import admin
-from .models import Criterion, DailyEntry
+from .models import DailyEntry, Quiz, QuizResult
 
-admin.site.register(Criterion)
 admin.site.register(DailyEntry)
-
-# Register your models here.
+admin.site.register(Quiz)
+admin.site.register(QuizResult)

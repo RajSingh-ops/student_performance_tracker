@@ -22,18 +22,18 @@
     border-radius: 6px;
 }
 
-/* Hover effect */
+
 .star-rating label:hover,
 .star-rating label:hover ~ label {
     color: gold;
 }
 
-/* Normal checked stars (gold) */
+
 .star-rating input:checked ~ label {
     color: gold;
 }
 
-/* Highlight SELECTED star (the one clicked) */
+
 .star-rating input:checked + label {
     transform: scale(1.35);
     box-shadow: 0 0 8px rgba(0, 140, 255, 0.8);
@@ -47,7 +47,7 @@
 
     <h2 class="mb-4">Review Panel</h2>
 
-    <!-- Average Rating Section -->
+    
     <div class="card p-4 shadow-sm mb-4">
         <h4>Average Rating</h4>
         <div style="font-size: 22px;">
@@ -65,14 +65,14 @@
     </div>
 
 
-    <!-- Submit New Review -->
+    
     <div class="card p-4 shadow-sm mb-5">
         <h4>Leave a Review</h4>
 
         <form method="post">
             {% csrf_token %}
 
-            <!-- Star Rating -->
+            
             <div class="mb-3">
                 <label class="form-label"><strong>Your Rating</strong></label><br>
 
@@ -97,12 +97,12 @@
                 font-size: 30px;
                 cursor: pointer;
             }
-            /* highlight previously hovered stars */
+            
             .star-rating label:hover,
             .star-rating label:hover ~ label {
                 color: gold;
             }
-            /* highlight checked stars */
+            
             .star-rating input:checked ~ label {
                 color: gold;
             }
@@ -110,7 +110,7 @@
     </div>
 
 
-    <!-- All Reviews List -->
+    
     <div class="card p-4 shadow-sm">
         <h4>All Reviews</h4>
 

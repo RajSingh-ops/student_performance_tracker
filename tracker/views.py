@@ -1,7 +1,7 @@
 from collections import defaultdict
 import random
 import json
-from .models import Achievement, Help_comment, Help_like
+import google.generativeai as genai
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -11,32 +11,21 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.conf import settings
 
-from .models import Achievement, AchievementLike, AchievementComment
-
-from .models import Criterion, DailyEntry, DailyScore, Profile, Review
+from .models import DailyEntry, DailyScore, Profile, Review, Quiz, QuizResult
 
 
 def handler404(request, exception=None):
     """Redirect 404 errors to dashboard."""
     return redirect('dashboard')
-
-
-import json
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
-from collections import defaultdict
 from .models import DailyEntry
 
 @login_required
 def dashboard_view(request):
     user = request.user
-    # 1. Filter entries specifically for the year 2026
     current_year = 2026 
     entries = DailyEntry.objects.filter(
         user=user, 
@@ -48,7 +37,6 @@ def dashboard_view(request):
     month_data = defaultdict(list)
     score_data = {}
 
-    # Performance categories for Pie Chart
     excellent = 0
     very_good = 0
     average = 0
@@ -58,31 +46,28 @@ def dashboard_view(request):
     for e in entries:
         date_str = e.date.isoformat()
         
-        # Calculate daily average across all criteria
-        ratings = e.ratings.values() if e.ratings else [0]
-        values = [int(v) for v in ratings]
-        daily_avg = round(sum(values) / len(values), 2) if values else 0
+        quiz_results = QuizResult.objects.filter(quiz__entry=e, passed=True)
+        
+        if quiz_results.exists():
+            daily_score = sum(r.score for r in quiz_results) / quiz_results.count()
+            daily_score = round(daily_score / 20, 2)  # Convert to 1-5 scale
+        else:
+            daily_score = 0
 
-        # Prepare Line Chart data
         line_labels.append(date_str)
-        line_values.append(daily_avg)
+        line_values.append(daily_score)
 
-        # Prepare Monthly Bar Chart data
         month_name = e.date.strftime("%b")
-        month_data[month_name].append(daily_avg)
+        month_data[month_name].append(daily_score)
 
-        # Prepare Heatmap data
-        score_data[date_str] = daily_avg
+        score_data[date_str] = daily_score
 
-        # Categorize for Pie Chart
-        if daily_avg >= 4.5: excellent += 1
-        elif daily_avg >= 3.5: very_good += 1
-        elif daily_avg >= 2.5: average += 1
-        elif daily_avg >= 1.5: below_avg += 1
-        else: poor += 1
+        if daily_score >= 4.5: excellent += 1
+        elif daily_score >= 3.5: very_good += 1
+        elif daily_score >= 2.5: average += 1
+        elif daily_score >= 1.5: below_avg += 1
+        elif daily_score > 0: poor += 1
 
-    # Format Monthly Averages
-    # We use a list of month names to keep them in order Jan-Dec
     month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     final_month_labels = []
     final_month_scores = []
@@ -111,30 +96,7 @@ def dashboard_view(request):
     return render(request, "dashboard.html", context)
 
 
-@login_required
-def criteria_setup_view(request):
-    user = request.user
 
-    if request.method == "POST":
-        Criterion.objects.filter(user=user).delete()
-
-        names = [
-            request.POST.get("crit1"),
-            request.POST.get("crit2"),
-            request.POST.get("crit3"),
-            request.POST.get("crit4"),
-            request.POST.get("crit5"),
-        ]
-
-        order = 0
-        for name in names:
-            if name and name.strip():
-                Criterion.objects.create(user=user, name=name.strip(), order=order)
-                order += 1
-
-        return redirect("daily-entry")
-
-    return render(request, "criteria_setup.html")
 
 
 from django.conf import settings
@@ -281,19 +243,16 @@ def daily_entry_view(request):
     user = request.user
     today = timezone.localdate()
 
-    criterias = Criterion.objects.filter(user=user).order_by("order")
-    if not criterias.exists():
-        return redirect("criteria")
-
     entry = DailyEntry.objects.filter(user=user, date=today).first()
 
     if request.method == "POST":
-        ratings = {}
-
-        for c in criterias:
-            rating = int(request.POST.get(f"rating_{c.id}", 1))
-            rating = max(1, min(5, rating))
-            ratings[c.name] = rating
+        subjects = {
+            'dsa': request.POST.get('dsa_description', '').strip(),
+            'os': request.POST.get('os_description', '').strip(),
+            'dbms': request.POST.get('dbms_description', '').strip(),
+            'cn': request.POST.get('cn_description', '').strip(),
+            'system_design': request.POST.get('system_design_description', '').strip(),
+        }
 
         reflection = request.POST.get("reflection", "").strip()
 
@@ -301,8 +260,12 @@ def daily_entry_view(request):
             user=user,
             date=today,
             defaults={
-                "ratings": ratings,
-                "reflection": reflection,
+                'dsa_description': subjects['dsa'],
+                'os_description': subjects['os'],
+                'dbms_description': subjects['dbms'],
+                'cn_description': subjects['cn'],
+                'system_design_description': subjects['system_design'],
+                'reflection': reflection,
             },
         )
 
@@ -310,8 +273,6 @@ def daily_entry_view(request):
         return redirect("daily")
 
     return render(request, "daily_entry.html", {
-        "criteria": criterias,
-        "existing_ratings": entry.ratings if entry else {},
         "entry": entry,
         "today": today,
     })
@@ -335,7 +296,196 @@ def daily_view(request):
     except DailyEntry.DoesNotExist:
         return redirect("daily-entry")
 
-    return render(request, "daily.html", {"entry": entry})
+    quiz_results = QuizResult.objects.filter(quiz__entry=entry).order_by('-created_at')
+
+    return render(request, "daily.html", {
+        "entry": entry,
+        "quiz_results": quiz_results,
+    })
+
+
+def generate_sample_subject_quiz(subject, topic):
+    """Generate 4 sample quiz questions for a specific subject"""
+    questions = []
+    
+    for i in range(1, 5):
+        questions.append({
+            "question": f"Question {i} about {subject.upper()}?",
+            "options": {"A": f"Option A{i}", "B": f"Option B{i}", "C": f"Option C{i}", "D": f"Option D{i}"},
+            "correct": ["A", "B", "C", "D"][i % 4],
+            "subject": subject
+        })
+    
+    return questions
+
+
+@login_required
+def start_quiz(request):
+    """Start a unified quiz: 20 questions from all 5 subjects"""
+    user = request.user
+    today = timezone.localdate()
+
+    entry = get_object_or_404(DailyEntry, user=user, date=today)
+
+    topics_data = {
+        'DSA': entry.dsa_description or 'Data Structures and Algorithms',
+        'OS': entry.os_description or 'Operating Systems',
+        'DBMS': entry.dbms_description or 'Database Management',
+        'CN': entry.cn_description or 'Computer Networks',
+        'SYSTEM_DESIGN': entry.system_design_description or 'System Design',
+    }
+
+    all_questions = []
+    
+    for subject, topic in topics_data.items():
+        try:
+            if settings.GEMINI_API_KEY:
+                genai.configure(api_key=settings.GEMINI_API_KEY)
+                model = genai.GenerativeModel("models/gemini-2.5-flash")
+
+                prompt = f"""Generate exactly 4 multiple-choice questions as JSON only.
+Topic: {topic}
+Subject: {subject}
+
+Return ONLY valid JSON array, no other text:
+[
+  {{"question": "Question text?", "options": {{"A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D"}}, "correct": "A"}},
+]
+Make exactly 4 questions that test understanding of {topic}. Each option should be plausible."""
+
+                import json
+                
+                try:
+                    response = model.generate_content(prompt)
+                    response_text = response.text.strip()
+
+                    start_idx = response_text.find('[')
+                    end_idx = response_text.rfind(']') + 1
+                    
+                    if start_idx != -1 and end_idx > start_idx:
+                        try:
+                            json_str = response_text[start_idx:end_idx]
+                            subject_questions = json.loads(json_str)
+                            if len(subject_questions) >= 4:
+                                for q in subject_questions[:4]:
+                                    q['subject'] = subject
+                                all_questions.extend(subject_questions[:4])
+                            else:
+                                fallback_qs = generate_sample_subject_quiz(subject, topic)
+                                all_questions.extend(fallback_qs)
+                        except:
+                            fallback_qs = generate_sample_subject_quiz(subject, topic)
+                            all_questions.extend(fallback_qs)
+                    else:
+                        fallback_qs = generate_sample_subject_quiz(subject, topic)
+                        all_questions.extend(fallback_qs)
+                except:
+                    fallback_qs = generate_sample_subject_quiz(subject, topic)
+                    all_questions.extend(fallback_qs)
+        except:
+            fallback_qs = generate_sample_subject_quiz(subject, topic)
+            all_questions.extend(fallback_qs)
+
+    if not all_questions:
+        for subject, topic in topics_data.items():
+            fallback_qs = generate_sample_subject_quiz(subject, topic)
+            all_questions.extend(fallback_qs)
+
+    try:
+        quiz = Quiz.objects.create(
+            user=user,
+            entry=entry,
+            subject='MIXED',  # Unified quiz label
+            topic=', '.join(topics_data.values()),
+            questions=all_questions[:20]
+        )
+        return redirect('take-quiz', quiz_id=quiz.id)
+    except Exception as db_err:
+        messages.error(request, f"Error creating quiz: {str(db_err)[:80]}")
+        return redirect('daily')
+
+
+def generate_sample_quiz(subject, topic):
+    """Generate sample quiz questions as fallback"""
+    questions = [
+        {
+            "question": f"Question 1 about {subject.upper()}?",
+            "options": {"A": "Answer A", "B": "Answer B", "C": "Answer C", "D": "Answer D"},
+            "correct": "A"
+        },
+    ]
+    
+    for i in range(2, 21):
+        questions.append({
+            "question": f"Question {i} about {topic}?",
+            "options": {"A": f"Option A{i}", "B": f"Option B{i}", "C": f"Option C{i}", "D": f"Option D{i}"},
+            "correct": ["A", "B", "C", "D"][i % 4]
+        })
+    
+    return questions
+
+
+@login_required
+def take_quiz(request, quiz_id):
+    """Display quiz questions for user to answer"""
+    quiz = get_object_or_404(Quiz, id=quiz_id, user=request.user)
+
+    return render(request, 'quiz.html', {
+        'quiz': quiz,
+        'questions': quiz.questions,
+    })
+
+
+@login_required
+@require_POST
+def submit_quiz(request, quiz_id):
+    """Submit quiz answers and calculate score"""
+    quiz = get_object_or_404(Quiz, id=quiz_id, user=request.user)
+
+    answers = {}
+    correct_count = 0
+
+    for idx, question in enumerate(quiz.questions):
+        answer_key = f'answer_{idx}'
+        user_answer = request.POST.get(answer_key, '')
+        answers[str(idx)] = user_answer
+
+        if user_answer == question.get('correct'):
+            correct_count += 1
+
+    total_questions = len(quiz.questions)
+    score = (correct_count / total_questions * 100) if total_questions > 0 else 0
+    passed = score >= 60
+
+    quiz_result = QuizResult.objects.create(
+        user=request.user,
+        quiz=quiz,
+        answers=answers,
+        score=score,
+        passed=passed
+    )
+
+    update_daily_score_from_quizzes(quiz.entry)
+
+    messages.success(request, f"Quiz submitted! Your score: {score:.1f}%")
+    return redirect('daily')
+
+
+def update_daily_score_from_quizzes(entry):
+    """Update daily score based on quiz results"""
+    quiz_results = QuizResult.objects.filter(quiz__entry=entry)
+
+    if quiz_results.exists():
+        avg_score = sum(r.score for r in quiz_results) / quiz_results.count()
+        DailyScore.objects.update_or_create(
+            entry=entry,
+            defaults={
+                'score': avg_score,
+                'explanation': '',
+            }
+        )
+    else:
+        DailyScore.objects.filter(entry=entry).delete()
 
 
 def privacy_policy(request):
@@ -343,53 +493,7 @@ def privacy_policy(request):
 
 def terms_conditions(request):
     return render(request, "terms.html")
-@login_required
-def create_achievement(request):
-    if request.method == "POST":
-        Achievement.objects.create(
-            user=request.user,
-            title=request.POST.get("title"),
-            description=request.POST.get("description", ""),
-            image=request.FILES.get("image")
-        )
-        return redirect("achievements")
 
-    # If someone opens /create/ directly
-    return redirect("achievements")
-
-@login_required
-def achievements_page(request):
-    achievements = Achievement.objects.all().order_by("-created_at")
-    return render(request, "achievements.html", {
-        "achievements": achievements
-    })
-@login_required
-@require_POST
-def toggle_like(request, id):
-    achievement = get_object_or_404(Achievement, id=id)
-
-    like, created = AchievementLike.objects.get_or_create(
-        user=request.user,
-        achievement=achievement
-    )
-
-    if not created:
-        like.delete()
-
-    return JsonResponse({
-        "likes": AchievementLike.objects.filter(
-            achievement=achievement
-        ).count()
-    })
-@login_required
-@require_POST
-def add_comment(request, id):
-    AchievementComment.objects.create(
-        user=request.user,
-        achievement_id=id,
-        text=request.POST.get("comment")
-    )
-    return redirect("achievements")
 def landing_page(request):
     return render(request, "landing.html")
 
@@ -399,56 +503,6 @@ from django.views.decorators.http import require_POST
 from django.conf import settings
 import google.generativeai as genai
 
-@require_POST
-@login_required
-def analyze_entry(request):
-    user = request.user
-    today = timezone.localdate()
-
-    entry = get_object_or_404(DailyEntry, user=user, date=today)
-
-    # Prepare ratings text
-    ratings_text = "\n".join(
-        f"{k}: {v}/5" for k, v in entry.ratings.items()
-    )
-
-    reflection = entry.reflection or "No reflection provided."
-
-    prompt = f"""
-Here is the user's daily performance.
-
-Ratings:
-{ratings_text}
-
-Overall reflection:
-{reflection}
-
-Task:
-Give short advice and motivation in about 10000 characters.
-Be positive, practical, and encouraging.
-"""
-
-    genai.configure(api_key=settings.GEMINI_API_KEY)
-
-    # ✅ Correct placement
-    model = genai.GenerativeModel("models/gemini-2.5-flash")
-    response = model.generate_content(prompt)
-    output = response.text.strip()
-
-    # ✅ Calculate score from ratings (NOT from AI text)
-    avg_rating = sum(entry.ratings.values()) / len(entry.ratings)
-    score = int((avg_rating / 5) * 100)
-
-    DailyScore.objects.update_or_create(
-        entry=entry,
-        defaults={
-            "score": score,
-            "explanation": output
-        }
-    )
-
-    messages.success(request, "Analysis complete!")
-    return redirect("daily")
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 
@@ -461,141 +515,15 @@ def delete_account_view(request):
         return redirect("landing")
 
     return render(request, "delete_account.html")
-# views.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.models import User
 
 def view_other_profile(request, username):
-    # 1. Find the user being requested
     other_user = get_object_or_404(User, username=username)
     
-    # 2. THE SELF CASE:
-    # If the logged-in user clicks on themselves, redirect them to their own dashboard
     if request.user.is_authenticated and request.user == other_user:
         return redirect('profile') # 'profile' is your private view name
     
-    # 3. Otherwise, show them the public template
     return render(request, 'other_profile_template.html', {
         'other_user': other_user
     })
-from .models import Help
-@login_required
-def help_page(request):
-    helps = Help.objects.all().order_by("-created_at")
-    return render(request, "help.html", {"helps": helps})
-BOT_MESSAGES = {
-    "suicidal": (
-        "I’m really sorry you’re feeling this way. You’re not weak for feeling this pain, "
-        "and you don’t have to face it alone.\n\n"
-        "What you’re going through matters. Even if it feels impossible right now, help does exist.\n\n"
-        "Please consider talking to someone who can support you right now:\n\n"
-        "AASRA Helpline – +91-9820466726 (24/7)\n"
-        "Or visit: https://www.aasra.info\n\n"
-        "If you’re in immediate danger, please contact your local emergency number right now.\n"
-        "You deserve care, and your life has value."
-    ),
-
-    "suffering": (
-        "It sounds like you’re carrying a lot right now. What you’re feeling is real, and it matters.\n\n"
-        "You don’t have to go through this by yourself. Even small steps—like talking to someone you trust—"
-        "can make a difference.\n\n"
-        "You deserve understanding, patience, and care."
-    ),
-
-    "need_help": (
-        "I’m really glad you reached out. Asking for help takes courage.\n\n"
-        "Someone here will respond soon. You’re not alone in this—your feelings matter, and support is available."
-    ),
-
-    "ok": (
-        "Thanks for sharing. If you ever need guidance or support, the community is here for you."
-    ),
-
-    "not_help": (
-        "Thanks for posting! This section is mainly for people who are asking for help or support. "
-        "If you don’t need help right now, you might enjoy sharing in another part of the app instead."
-    )
-}
-
-
-@login_required
-def create_help(request):
-    if request.method == "POST":
-        comment = request.POST.get("comment", "")
-        image = request.FILES.get("image")
-
-        category = classify(comment)
-
-        help_obj = Help.objects.create(
-            user=request.user,
-            comment=comment,
-            image=image,
-            category=category  # store it if you want
-        )
-
-        # Auto-reply with classification (for testing)
-        bot_text = BOT_MESSAGES.get(category, "We’re here with you.")
-
-        Help_comment.objects.create(
-            user=None,   # Bot
-            help=help_obj,
-            text=bot_text
-        )
-
-    return redirect("help")
-
-
-    return redirect("help")
-@login_required
-def like_help(request, id):
-    help_obj = get_object_or_404(Help, id=id)
-
-    like, created = Help_like.objects.get_or_create(
-        user=request.user,
-        help=help_obj
-    )
-
-    if not created:
-        like.delete()
-
-    return JsonResponse({
-        "likes": help_obj.likes.count()
-    })
-
-@login_required
-def add_help_comment(request, id):
-    help_obj = get_object_or_404(Help, id=id)
-
-    if request.method == "POST":
-        text = request.POST.get("comment")
-        Help_comment.objects.create(
-            user=request.user,
-            help=help_obj,
-            text=text
-        )
-
-    return redirect("help")
-import pickle
-
-with open("tracker/help.pkl", "rb") as f:
-    vectorizer, model = pickle.load(f)
-
-def classify(text):
-    vec = vectorizer.transform([text])
-    return model.predict(vec)[0]
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect
-from .models import Help
-
-@login_required
-def delete_help(request, id):
-    help_obj = get_object_or_404(Help, id=id)
-
-    # Only the owner can delete
-    if help_obj.user != request.user:
-        return redirect("help")
-
-    if request.method == "POST":
-        help_obj.delete()
-
-    return redirect("help")

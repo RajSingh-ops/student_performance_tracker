@@ -7,3 +7,11 @@ def get_item(dictionary, key):
         return dictionary.get(key, "")
     except:
         return ""
+@register.filter
+def get_subject_value(obj, subject):
+    """Get the value of a subject field from entry object"""
+    try:
+        field_name = f'{subject}_description'
+        return getattr(obj, field_name, "") if obj else ""
+    except:
+        return ""

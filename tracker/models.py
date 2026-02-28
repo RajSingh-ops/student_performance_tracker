@@ -2,9 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 
-# ---------------------------------------------------------
-# 1. Criteria (max 5 per user)
-# ---------------------------------------------------------
 class Criterion(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="criteria")
     name = models.CharField(max_length=50)
@@ -18,17 +15,16 @@ class Criterion(models.Model):
         return f"{self.user.username} - {self.name}"
 
 
-# ---------------------------------------------------------
-# 2. Daily Entry (ratings + descriptions for 5 criteria)
-# ---------------------------------------------------------
 class DailyEntry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="entries")
     date = models.DateField()
 
-    ratings = models.JSONField()
-    
+    dsa_description = models.TextField(blank=True)
+    os_description = models.TextField(blank=True)
+    dbms_description = models.TextField(blank=True)
+    cn_description = models.TextField(blank=True)
+    system_design_description = models.TextField(blank=True)
 
-    # ✅ NEW FIELD (single writing space)
     reflection = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -39,9 +35,30 @@ class DailyEntry(models.Model):
 
 
 
-# ---------------------------------------------------------
-# 3. Daily Score (from Gemini API)
-# ---------------------------------------------------------
+class Quiz(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="quizzes")
+    entry = models.ForeignKey(DailyEntry, on_delete=models.CASCADE, related_name="quizzes")
+    subject = models.CharField(max_length=50)  # DSA, OS, DBMS, CN, System Design
+    topic = models.CharField(max_length=200)  # What they did (from text input)
+    questions = models.JSONField()  # List of 20 questions with options
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Quiz: {self.user.username} - {self.subject}: {self.topic}"
+
+
+class QuizResult(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="quiz_results")
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="results")
+    answers = models.JSONField()  # User's selected answers
+    score = models.FloatField()  # Percentage (0-100)
+    passed = models.BooleanField()  # True if score >= 60
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.quiz.subject}: {self.score}%"
+
+
 class DailyScore(models.Model):
     entry = models.OneToOneField(DailyEntry, on_delete=models.CASCADE, related_name="score")
     score = models.FloatField()  # Example: 113.0
@@ -51,9 +68,6 @@ class DailyScore(models.Model):
         return f"Score {self.score} for {self.entry.date}"
 
 
-# ---------------------------------------------------------
-# 4. Monthly Score (average of daily scores)
-# ---------------------------------------------------------
 class MonthlyScore(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     year = models.PositiveIntegerField()
@@ -67,9 +81,6 @@ class MonthlyScore(models.Model):
         return f"{self.user.username} - {self.month}/{self.year}: {self.score}"
 
 
-# ---------------------------------------------------------
-# 5. Yearly Score (average of monthly scores)
-# ---------------------------------------------------------
 class YearlyScore(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     year = models.PositiveIntegerField()
@@ -120,73 +131,6 @@ class Profile(models.Model):
         return f"{self.user.username}'s Profile"
 
 
-class Achievement(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
-    image = CloudinaryField(
-        'achievement_image',
-        blank=True,
-        null=True
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-class AchievementLike(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ('user', 'achievement')
-class AchievementComment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
-    text = models.TextField(max_length=500)
-    created_at = models.DateTimeField(auto_now_add=True)
-class Help(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    comment = models.CharField(max_length=300)
-    category = models.CharField(max_length=100, default="ok")
-    image = CloudinaryField(
-        "help_image",
-        blank=True,
-        null=True,
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["-created_at"]
-
-
-
-class Help_like(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    help = models.ForeignKey(
-        Help,
-        on_delete=models.CASCADE,
-        related_name="likes"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('user', 'help')
-
-
-class Help_comment(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
-    help = models.ForeignKey(
-        Help,
-        on_delete=models.CASCADE,
-        related_name="comments"
-    )
-    text = models.TextField(max_length=500)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["created_at"]
 
 

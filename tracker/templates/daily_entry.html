@@ -3,38 +3,84 @@
 {% block title %}Daily Entry{% endblock %}
 
 {% block content %}
-<h2 class="mb-3">Daily Entry – {{ today }}</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">Daily Learning Entry – {{ today }}</h2>
 
-<form method="post" class="card p-4 shadow-sm">
-    {% csrf_token %}
+    <form method="post" class="card p-4 shadow-sm">
+        {% csrf_token %}
 
-    {% for c in criteria %}
-        <div class="mb-4">
-            <label class="form-label"><strong>{{ c.name }}</strong></label>
+        
+        <div class="row">
+            
+            <div class="col-md-6 mb-4">
+                <label class="form-label fw-semibold">📊 DSA (Data Structures & Algorithms)</label>
+                <textarea
+                    name="dsa_description"
+                    class="form-control"
+                    rows="3"
+                    placeholder="What did you study/practice in DSA today?"
+                >{{ entry.dsa_description|default:"" }}</textarea>
+            </div>
 
-            <select name="rating_{{ c.id }}" class="form-select">
-                {% with selected=existing_ratings|get_item:c.name %}
-                <option value="1" {% if selected == 1 %}selected{% endif %}>1 - Poor</option>
-                <option value="2" {% if selected == 2 %}selected{% endif %}>2 - Below Average</option>
-                <option value="3" {% if selected == 3 %}selected{% endif %}>3 - OK</option>
-                <option value="4" {% if selected == 4 %}selected{% endif %}>4 - Good</option>
-                <option value="5" {% if selected == 5 %}selected{% endif %}>5 - Excellent</option>
-                {% endwith %}
-            </select>
+            
+            <div class="col-md-6 mb-4">
+                <label class="form-label fw-semibold">🖥️ OS (Operating Systems)</label>
+                <textarea
+                    name="os_description"
+                    class="form-control"
+                    rows="3"
+                    placeholder="What did you study/practice in OS today?"
+                >{{ entry.os_description|default:"" }}</textarea>
+            </div>
+
+            
+            <div class="col-md-6 mb-4">
+                <label class="form-label fw-semibold">🗄️ DBMS (Database Management Systems)</label>
+                <textarea
+                    name="dbms_description"
+                    class="form-control"
+                    rows="3"
+                    placeholder="What did you study/practice in DBMS today?"
+                >{{ entry.dbms_description|default:"" }}</textarea>
+            </div>
+
+            
+            <div class="col-md-6 mb-4">
+                <label class="form-label fw-semibold">🌐 CN (Computer Networks)</label>
+                <textarea
+                    name="cn_description"
+                    class="form-control"
+                    rows="3"
+                    placeholder="What did you study/practice in CN today?"
+                >{{ entry.cn_description|default:"" }}</textarea>
+            </div>
+
+            
+            <div class="col-md-6 mb-4">
+                <label class="form-label fw-semibold">🏗️ System Design</label>
+                <textarea
+                    name="system_design_description"
+                    class="form-control"
+                    rows="3"
+                    placeholder="What did you study/practice in System Design today?"
+                >{{ entry.system_design_description|default:"" }}</textarea>
+            </div>
         </div>
-    {% endfor %}
 
-    <!-- Overall Reflection -->
-    <div class="mb-4">
-        <label class="form-label fw-semibold">Overall reflection (optional)</label>
-        <textarea
-            name="reflection"
-            class="form-control"
-            rows="4"
-            placeholder="How was your day overall? Mood, focus, stress, wins, distractions…"
-        >{{ entry.reflection|default_if_none:"" }}</textarea>
-    </div>
+        
+        <div class="mb-4">
+            <label class="form-label fw-semibold">💭 Overall reflection (optional)</label>
+            <textarea
+                name="reflection"
+                class="form-control"
+                rows="4"
+                placeholder="How was your day overall? Mood, focus, stress, wins, distractions…"
+            >{{ entry.reflection|default:"" }}</textarea>
+        </div>
 
-    <button type="submit" class="btn btn-primary w-100">Save</button>
-</form>
+        <button type="submit" class="btn btn-primary w-100">💾 Save Entry</button>
+    </form>
+
+    <a href="{% url 'daily' %}" class="btn btn-secondary mt-3">⬅️ Back</a>
+</div>
 {% endblock %}

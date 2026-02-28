@@ -8,7 +8,6 @@ def notifications_processor(request):
     user = request.user
     today = timezone.localtime().date()
 
-    # Data check
     has_entry = DailyEntry.objects.filter(user=user, date=today).exists()
     has_analysis = False
     if has_entry:

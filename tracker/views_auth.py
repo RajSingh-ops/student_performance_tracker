@@ -25,7 +25,6 @@ def register_view(request):
         form = CustomRegisterForm(request.POST)
         if form.is_valid():
             form.save()
-            # Optional: Add a success message so the user knows it worked
             messages.success(request, "Account created successfully! You can now login.")
             return redirect("login")
     else:
