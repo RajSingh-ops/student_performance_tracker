@@ -21,7 +21,7 @@ SECRET_KEY = os.environ.get(
     "django-insecure-dev-only"
 )
 
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
     "localhost,127.0.0.1,build2026.onrender.com,testserver,dishes-bone-triumph-agreements.trycloudflare.com"
