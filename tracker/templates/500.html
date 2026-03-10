@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Server Error | Student Performance Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --danger: #ef4444;
+            --bg: #0f172a;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            padding: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            color: var(--danger);
+        }
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+        h2 { font-size: 1.5rem; margin-bottom: 1rem; color: var(--text-muted); }
+        p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2.5rem; }
+        .btn {
+            display: inline-block;
+            background-color: #334155;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #475569;
+            transform: translateY(-2px);
+        }
+        .status-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 2rem;
+            text-align: left;
+        }
+        .status-box code {
+            color: #f43f5e;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">⚠️</div>
+        <h1>500</h1>
+        <h2>Internal Server Error</h2>
+        <p>Something went wrong on our end. Our team has been notified and we're working to fix it.</p>
+        <a href="/" class="btn">Reload Page</a>
+        
+        <div class="status-box">
+            <p style="font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 600;">Technical Details:</p>
+            <code style="font-size: 0.85rem;">The server encountered an unexpected condition. (Error ID: SYST-500)</code>
+        </div>
+    </div>
+</body>
+</html>

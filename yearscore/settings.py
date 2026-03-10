@@ -24,7 +24,7 @@ SECRET_KEY = os.environ.get(
 DEBUG = False
 ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
-    "localhost,127.0.0.1,build2026.onrender.com,testserver,dishes-bone-triumph-agreements.trycloudflare.com"
+    "localhost,127.0.0.1,build2026.onrender.com"
 ).split(",")
 
 CSRF_TRUSTED_ORIGINS = [

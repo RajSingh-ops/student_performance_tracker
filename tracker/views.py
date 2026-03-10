@@ -19,8 +19,8 @@ from .models import DailyEntry, DailyScore, Profile, Review, Quiz, QuizResult
 
 
 def handler404(request, exception=None):
-    """Redirect 404 errors to dashboard."""
-    return redirect('dashboard')
+    """Render custom 404 page."""
+    return render(request, '404.html', status=404)
 from .models import DailyEntry
 
 @login_required
